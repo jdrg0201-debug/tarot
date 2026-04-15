@@ -11,6 +11,14 @@ export const metadata = {
   description: "Conexión energética directa con el maestro",
 };
 
+export const viewport = {
+  themeColor: '#0a0a0a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
