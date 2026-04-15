@@ -383,19 +383,22 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
       {/* Input Area */}
       <div className="p-3 bg-dark-800 border-t border-white/5 shrink-0 z-10">
         {mediaPreview && (
-          <div className="mb-3 relative w-20 h-20 rounded-xl overflow-hidden bg-dark-900 border border-white/10">
-             {mediaFile?.type.startsWith('image/') ? (
-               <img src={mediaPreview} alt="preview" className="object-cover w-full h-full" />
+          <div className="mb-3 relative w-fit rounded-xl overflow-hidden bg-dark-900 border border-white/10 pr-10">
+             {mediaFile?.type?.startsWith('image/') ? (
+               <div className="w-20 h-20">
+                 <img src={mediaPreview} alt="preview" className="object-cover w-full h-full" />
+               </div>
              ) : (
-               <div className="flex items-center justify-center w-full h-full text-purple-400">
-                 <Mic size={24} />
+               <div className="pl-3 pr-1 py-1">
+                 <CustomAudioMessage src={mediaPreview} />
                </div>
              )}
              <button 
                onClick={() => { setMediaPreview(null); setMediaFile(null); }}
-               className="absolute top-1 right-1 bg-black/50 p-1 rounded-full text-white"
+               className="absolute top-1/2 -translate-y-1/2 right-2.5 bg-red-500/80 hover:bg-red-500 p-1.5 rounded-full text-white transition-colors z-20 shadow-lg"
+               title="Eliminar archivo"
              >
-               <X size={12} />
+               <X size={14} />
              </button>
           </div>
         )}
@@ -461,7 +464,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
               />
             )}
 
-            {inputText.trim() || mediaFile ? (
+            {inputText.trim() || mediaPreview ? (
                <button 
                 type="submit" 
                 className="p-2 bg-gradient-to-r from-gold-500 to-yellow-300 text-black rounded-full hover:scale-105 transition shadow-[0_0_10px_rgba(212,175,55,0.4)]"
