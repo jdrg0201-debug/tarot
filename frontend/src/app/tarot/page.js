@@ -48,7 +48,7 @@ export default function TarotPage() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen text-white p-6 relative overflow-hidden bg-transparent"
+      className="flex flex-col items-center justify-center min-h-screen text-white p-6 relative overflow-x-hidden overflow-y-auto bg-transparent"
       style={{ perspective: '1200px' }}
     >
       {/* Title */}

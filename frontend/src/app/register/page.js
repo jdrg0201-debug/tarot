@@ -49,7 +49,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen text-white p-4 relative overflow-hidden bg-transparent">
+    <div className="flex items-center justify-center min-h-screen text-white p-4 relative overflow-x-hidden overflow-y-auto bg-transparent">
       
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}

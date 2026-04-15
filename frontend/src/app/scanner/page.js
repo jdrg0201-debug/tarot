@@ -77,7 +77,7 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-white overflow-hidden relative select-none bg-transparent">
+    <div className="flex flex-col items-center justify-center min-h-screen text-white overflow-x-hidden overflow-y-auto relative select-none bg-transparent">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-purple-900)_0%,_transparent_60%)] opacity-20 pointer-events-none"></div>
       
       {/* Particles */}

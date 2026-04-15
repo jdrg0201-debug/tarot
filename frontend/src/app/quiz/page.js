@@ -38,7 +38,7 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-white p-6 relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-white p-6 relative overflow-x-hidden overflow-y-auto">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#1a1a1a_0%,_transparent_80%)] opacity-30 pointer-events-none"></div>
 
       <AnimatePresence mode="wait">
