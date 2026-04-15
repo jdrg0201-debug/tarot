@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Build outputs
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Environment variables (KEEP SECRETS OUT OF GIT)
+.env
+.env.local
+.env.production
+backend/.env
+frontend/.env.local
+frontend/.env.production
+
+# Uploads (user generated content)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Large files & generated images at root level only
+Gemini_Generated_Image_*
+mystical_ritual_project.zip
