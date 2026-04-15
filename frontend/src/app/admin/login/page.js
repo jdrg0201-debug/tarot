@@ -4,6 +4,12 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Shield, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { playSound } from '@/components/common/MysticAtmosphere';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -20,15 +26,23 @@ export default function AdminLogin() {
     playSound('click-magic');
 
     try {
-      const res = await fetch('http://localhost:5555/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+      // Validate credentials directly via Supabase (no backend dependency)
+      let validEmail = 'admin@tarot.com';
+      let validPassword = 'admin123';
 
-      if (res.ok) {
+      try {
+        const { data: settings } = await supabase
+          .from('configuracion_admin')
+          .select('email, password_hash')
+          .single();
+        if (settings?.email) validEmail = settings.email;
+        if (settings?.password_hash) validPassword = settings.password_hash;
+      } catch (_) {
+        // Use default credentials if Supabase unreachable
+      }
+
+      if (email === validEmail && password === validPassword) {
         playSound('sparkle');
-        // Simple auth simulation
         localStorage.setItem('admin_token', 'mistic_token_123');
         router.push('/admin');
       } else {
