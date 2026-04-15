@@ -325,7 +325,9 @@ export default function AdminDashboard() {
              </div>
              <span className="text-xs text-white font-serif">{adminProfile.name}</span>
           </div>
-          <button onClick={() => setShowMobileDetails(!showMobileDetails)} className={`p-2 transition-all ${activeChat ? 'text-gold-500' : 'text-gray-800'}`} disabled={!activeChat}><Star size={20} /></button>
+          <button onClick={() => setShowMobileDetails(!showMobileDetails)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-[10px] font-bold uppercase tracking-wider ${activeChat ? 'border-gold-500/50 text-gold-500 bg-gold-500/10 hover:bg-gold-500/20' : 'border-white/5 text-gray-700 bg-transparent'}`} disabled={!activeChat}>
+            <User size={14} /> Info Cliente
+          </button>
         </div>
 
         {activeChat ? (
