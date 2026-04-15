@@ -139,6 +139,27 @@ app.put('/api/users/:userId/archive', async (req, res) => {
   res.json(mapped);
 });
 
+app.put('/api/users/:userId/whatsapp-click', async (req, res) => {
+  const { userId } = req.params;
+  
+  const { data: curr } = await supabase.from('usuarios').select('etiquetas').eq('user_id', userId).single();
+  const etiquetas = curr?.etiquetas || [];
+  if (!etiquetas.includes('whatsapp_contactado')) {
+    etiquetas.push('whatsapp_contactado');
+  }
+
+  const { data } = await supabase
+    .from('usuarios')
+    .update({ etiquetas, actualizado_en: new Date().toISOString() })
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  const mapped = mapUser(data);
+  io.to('admins').emit('user_updated', mapped);
+  res.json(mapped);
+});
+
 app.delete('/api/users/:userId', async (req, res) => {
   const { userId } = req.params;
   await supabase.from('mensajes').delete().or(`emisor_id.eq.${userId},receptor_id.eq.${userId}`);

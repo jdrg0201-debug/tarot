@@ -5,9 +5,7 @@ import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@supabase/supabase-js';
 import { 
-  Users, MessageSquare, Bell, Search, Star, Filter, Calendar, Phone, 
-  Archive, Trash, ExternalLink, Clock, Flame, CheckCircle, XCircle, 
-  Send, AlertCircle, Zap, Heart, Shield, HelpCircle, MoreVertical, Menu, PlusCircle, LogOut, Camera, User
+  Users, Phone, Search, LogOut, CheckCircle, AlertCircle, XCircle, Menu, User, Star, MapPin, Calendar, Clock, MessageSquare, PlusCircle, Bookmark, Eye, Hand, Flame, Trash, Trash2, Shield, Heart, PieChart, Bell, Filter, Archive, ExternalLink, Send, Zap, HelpCircle, MoreVertical, Camera
 } from 'lucide-react';
 import ChatInterface from '@/components/chat/ChatInterface';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -219,8 +217,18 @@ export default function AdminDashboard() {
     } catch(e) {}
   };
 
-  const handleWhatsApp = (phone, name) => {
+  const handleWhatsApp = async (userId, phone, name) => {
     if (!phone) return;
+    
+    // Register WhatsApp click in backend
+    try {
+      const res = await fetch(`${SOCKET_URL}/api/users/${userId}/whatsapp-click`, { method: 'PUT' });
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setUsers(prev => prev.map(u => u.userId === userId ? updatedUser : u));
+      }
+    } catch(e) {}
+
     const cleanPhone = phone.replace(/\D/g, '');
     const msg = `Hola ${name}, soy el Maestro. He analizado tu caso y es importante que hablemos...`;
     window.open(`https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
@@ -237,7 +245,7 @@ export default function AdminDashboard() {
   };
   const interactedCount = statusCounts.conversacion + statusCounts.caliente + statusCounts.cerrado;
   const unrespondedCount = statusCounts.nuevo;
-  const whatsappAvailable = users.filter(u => !!u.phone).length;
+  const whatsappContacted = users.filter(u => u.tags && u.tags.includes('whatsapp_contactado')).length;
 
 
   const filteredUsers = users
@@ -279,6 +287,13 @@ export default function AdminDashboard() {
               </div>
           </div>
           
+          <button 
+            onClick={() => { setActiveChat(null); setShowMobileSidebar(false); }}
+            className={`w-full py-2 mb-4 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all ${!activeChat ? 'bg-gold-500/20 text-gold-500 border-gold-500/50 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : 'bg-dark-950 text-gray-400 border-white/5 hover:border-white/20'}`}
+          >
+            <PieChart size={14} className="inline mr-2" /> Resumen Estadístico
+          </button>
+
           <div className="flex gap-2 mb-4">
             <button onClick={() => setTab('chats')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${tab === 'chats' ? 'bg-purple-800 text-white' : 'text-gray-500 hover:text-white'}`}>CHATS</button>
             <button onClick={() => setTab('leads')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${tab === 'leads' ? 'bg-gold-500 text-black' : 'text-gray-500 hover:text-white'}`}>LEADS</button>
@@ -394,7 +409,7 @@ export default function AdminDashboard() {
                   </div>
                   {activeUserData?.phone && (
                     <div className="bg-dark-950 p-4 rounded-xl border border-white/5 flex flex-col gap-2">
-                      <div className="flex justify-between items-center text-[9px] text-gray-600 font-bold uppercase"><span><Phone size={10} className="inline mr-1" /> WhatsApp</span><button onClick={() => handleWhatsApp(activeUserData.phone, activeUserData.name)} className="text-green-500">CONTACTAR</button></div>
+                      <div className="flex justify-between items-center text-[9px] text-gray-600 font-bold uppercase"><span><Phone size={10} className="inline mr-1" /> WhatsApp</span><button onClick={() => handleWhatsApp(activeUserData.userId, activeUserData.phone, activeUserData.name)} className="text-green-500 hover:text-green-400 transition-colors">CONTACTAR</button></div>
                       <div className="text-white font-mono text-sm">{activeUserData.phone}</div>
                     </div>
                   )}
@@ -428,8 +443,8 @@ export default function AdminDashboard() {
                    <div className="bg-dark-900 border border-white/5 rounded-2xl p-5 lg:p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden group hover:border-gold-500/30 transition-colors">
                       <div className="absolute -right-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-all pointer-events-none" />
                       <div className="text-green-500 mb-3"><Phone size={24} strokeWidth={1.5} /></div>
-                      <div className="text-3xl font-serif text-white mb-1">{whatsappAvailable}</div>
-                      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Tienen WhatsApp</div>
+                      <div className="text-3xl font-serif text-white mb-1">{whatsappContacted}</div>
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Clics WA</div>
                    </div>
                    <div className="bg-dark-900 border border-white/5 rounded-2xl p-5 lg:p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden group hover:border-gold-500/30 transition-colors">
                       <div className="absolute -right-4 -top-4 w-16 h-16 bg-yellow-500/10 rounded-full blur-xl group-hover:bg-yellow-500/20 transition-all pointer-events-none" />
