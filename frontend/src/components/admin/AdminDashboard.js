@@ -309,9 +309,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
         {/* Desktop Header Top Right Profile */}
-        <div className="hidden lg:flex h-16 bg-dark-900/50 border-b border-white/5 px-6 items-center justify-between z-30">
+        <div className="hidden lg:flex shrink-0 h-16 bg-dark-900/50 border-b border-white/5 px-6 items-center justify-between z-30">
            <div className="flex items-center gap-4">
              <span className="text-xs text-gold-500 font-serif tracking-widest uppercase italic">Canal Sagrado</span>
            </div>
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Mobile Header */}
-        <div className="lg:hidden h-14 bg-dark-800 border-b border-white/5 flex items-center justify-between px-4 z-30">
+        <div className="lg:hidden shrink-0 h-14 bg-dark-800 border-b border-white/5 flex items-center justify-between px-4 z-30">
           <button onClick={() => setShowMobileSidebar(true)} className="p-2 text-gold-500"><Menu size={20} /></button>
           <div className="flex items-center gap-2" onClick={() => setShowProfileModal(true)}>
              <div className="w-8 h-8 rounded-full border border-gold-500/30 overflow-hidden flex items-center justify-center bg-dark-950">
@@ -349,8 +349,8 @@ export default function AdminDashboard() {
         </div>
 
         {activeChat ? (
-          <div className="flex-1 flex relative">
-            <div className={`flex-1 flex flex-col min-w-0 transition-opacity duration-300 ${showMobileDetails ? 'opacity-20 lg:opacity-100' : 'opacity-100'}`}>
+          <div className="flex-1 flex relative min-h-0">
+            <div className={`flex-1 flex flex-col min-w-0 min-h-0 transition-opacity duration-300 ${showMobileDetails ? 'opacity-20 lg:opacity-100' : 'opacity-100'}`}>
                <ChatInterface userId="admin" role="admin" receiverId={activeChat} activeChat={activeChat} quickReplies={quickReplies} onManageQuickReplies={() => setShowQuickReplyManager(true)} />
             </div>
 
