@@ -188,13 +188,31 @@ app.get('/api/admin/settings', async (req, res) => {
 
 app.put('/api/admin/settings', async (req, res) => {
   const { name, avatar, email } = req.body;
-  const { data } = await supabase
-    .from('configuracion_admin')
-    .update({ nombre: name, avatar, email, actualizado_en: new Date().toISOString() })
-    .not('id', 'is', null) // Match any ID, as there is just one row
-    .select()
-    .single();
-  res.json(mapAdminSettings(data));
+  
+  // First, find if there is an existing settings row
+  const { data: existing } = await supabase.from('configuracion_admin').select('id').limit(1).single();
+  
+  let resultData;
+  if (existing && existing.id) {
+    // Update existing
+    const { data } = await supabase
+      .from('configuracion_admin')
+      .update({ nombre: name, avatar, email, actualizado_en: new Date().toISOString() })
+      .eq('id', existing.id)
+      .select()
+      .single();
+    resultData = data;
+  } else {
+    // Insert new if empty
+    const { data } = await supabase
+      .from('configuracion_admin')
+      .insert({ nombre: name, avatar, email, actualizado_en: new Date().toISOString() })
+      .select()
+      .single();
+    resultData = data;
+  }
+  
+  res.json(mapAdminSettings(resultData));
 });
 
 app.post('/api/admin/login', async (req, res) => {
