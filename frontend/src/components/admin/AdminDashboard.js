@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@supabase/supabase-js';
 import { 
   Users, MessageSquare, Bell, Search, Star, Filter, Calendar, Phone, 
   Archive, Trash, ExternalLink, Clock, Flame, CheckCircle, XCircle, 
@@ -13,6 +14,10 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -102,27 +107,38 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsEditing(true);
     try {
-      const res = await fetch(`${SOCKET_URL}/api/admin/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(adminProfile)
-      });
-      const data = await res.json();
-      setAdminProfile(data);
+      // Save directly to Supabase (no backend dependency)
+      await supabase
+        .from('configuracion_admin')
+        .update({
+          nombre: adminProfile.name,
+          avatar: adminProfile.avatar,
+          email: adminProfile.email,
+          actualizado_en: new Date().toISOString()
+        })
+        .neq('id', 0); // update the single row
       setShowProfileModal(false);
-    } catch(e) {} finally { setIsEditing(false); }
+    } catch(e) { console.error(e); } finally { setIsEditing(false); }
   };
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
     try {
-      const res = await fetch(`${SOCKET_URL}/api/upload`, { method: 'POST', body: formData });
-      const data = await res.json();
-      setAdminProfile(prev => ({ ...prev, avatar: data.url }));
-    } catch(e) {}
+      // Upload directly to Supabase Storage
+      const ext = file.name.split('.').pop();
+      const fileName = `avatar_${Date.now()}.${ext}`;
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+      if (error) throw error;
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+      const publicUrl = urlData.publicUrl;
+      setAdminProfile(prev => ({ ...prev, avatar: publicUrl }));
+    } catch(e) { console.error('Avatar upload failed:', e); }
   };
 
   const handleLogout = () => {
@@ -286,7 +302,7 @@ export default function AdminDashboard() {
                     <span className="text-[9px] text-gray-500 uppercase tracking-widest">Maestro Admin</span>
                  </div>
                  <div className="w-10 h-10 rounded-full border-2 border-gold-500/30 group-hover:border-gold-500 transition-all overflow-hidden flex items-center justify-center bg-dark-950">
-                    {adminProfile.avatar ? <img src={SOCKET_URL + adminProfile.avatar} className="w-full h-full object-cover" /> : <User size={20} className="text-gold-500" />}
+                    {adminProfile.avatar ? <img src={adminProfile.avatar} className="w-full h-full object-cover" alt="admin" /> : <User size={20} className="text-gold-500" />}
                  </div>
               </div>
               <button onClick={handleLogout} className="text-gray-600 hover:text-red-500 transition-colors p-2" title="Cerrar Sesión"><LogOut size={20} /></button>
@@ -298,7 +314,7 @@ export default function AdminDashboard() {
           <button onClick={() => setShowMobileSidebar(true)} className="p-2 text-gold-500"><Menu size={20} /></button>
           <div className="flex items-center gap-2" onClick={() => setShowProfileModal(true)}>
              <div className="w-8 h-8 rounded-full border border-gold-500/30 overflow-hidden flex items-center justify-center bg-dark-950">
-                {adminProfile.avatar ? <img src={SOCKET_URL + adminProfile.avatar} className="w-full h-full object-cover" /> : <User size={14} className="text-gold-500" />}
+                {adminProfile.avatar ? <img src={adminProfile.avatar} className="w-full h-full object-cover" alt="admin" /> : <User size={14} className="text-gold-500" />}
              </div>
              <span className="text-xs text-white font-serif">{adminProfile.name}</span>
           </div>
@@ -374,7 +390,7 @@ export default function AdminDashboard() {
                 <div className="p-8 border-b border-white/5 bg-dark-900/50 flex flex-col items-center">
                    <div className="relative group cursor-pointer mb-6" onClick={() => fileInputRef.current?.click()}>
                       <div className="w-24 h-24 rounded-full border-2 border-gold-500/50 overflow-hidden flex items-center justify-center bg-dark-950 shadow-2xl group-hover:border-gold-500 transition-all">
-                         {adminProfile.avatar ? <img src={SOCKET_URL + adminProfile.avatar} className="w-full h-full object-cover" /> : <User size={40} className="text-gold-500" />}
+                         {adminProfile.avatar ? <img src={adminProfile.avatar} className="w-full h-full object-cover" alt="admin" /> : <User size={40} className="text-gold-500" />}
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 rounded-full transition-opacity">
                          <Camera size={24} className="text-white" />

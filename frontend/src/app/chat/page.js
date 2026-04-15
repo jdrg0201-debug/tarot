@@ -26,12 +26,12 @@ export default function ChatPage() {
       try {
         const { data } = await supabase
           .from('configuracion_admin')
-          .select('nombre_maestro, avatar_url')
+          .select('nombre, avatar')
           .single();
         if (data) {
           setAdminSettings({
-            name: data.nombre_maestro || 'Maestro',
-            avatar: data.avatar_url || ''
+            name: data.nombre || 'Maestro',
+            avatar: data.avatar || ''
           });
         }
       } catch (e) {
