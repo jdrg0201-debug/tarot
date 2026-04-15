@@ -14,10 +14,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -70,21 +67,17 @@ export default function AdminDashboard() {
       .then(res => res.json())
       .then(data => setQuickReplies(data));
 
-    // Load admin settings directly from Supabase (backend not required)
-    supabase
-      .from('configuracion_admin')
-      .select('id, nombre, avatar, email')
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          setAdminRowId(data.id);
-          setAdminProfile({
-            name: data.nombre || 'El Maestro',
-            avatar: data.avatar || '',
-            email: data.email || ''
-          });
-        }
+    fetch(`${SOCKET_URL}/api/admin/settings`)
+      .then(res => res.json())
+      .then(data => {
+        setAdminRowId(data._id);
+        setAdminProfile({
+          name: data.name || 'El Maestro',
+          avatar: data.avatar || '',
+          email: data.email || ''
+        });
       });
+
 
     s.on('user_updated', (user) => {
       setUsers(prev => {
@@ -120,18 +113,17 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsEditing(true);
     try {
-      const filter = adminRowId ? supabase.from('configuracion_admin').update({
-        nombre: adminProfile.name,
-        avatar: adminProfile.avatar,
-        email: adminProfile.email,
-        actualizado_en: new Date().toISOString()
-      }).eq('id', adminRowId) : supabase.from('configuracion_admin').update({
-        nombre: adminProfile.name,
-        avatar: adminProfile.avatar,
-        email: adminProfile.email,
-        actualizado_en: new Date().toISOString()
-      }).not('id', 'is', null);
-      await filter;
+      const res = await fetch(`${SOCKET_URL}/api/admin/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adminProfile)
+      });
+      const data = await res.json();
+      setAdminProfile({
+        name: data.name || 'El Maestro',
+        avatar: data.avatar || '',
+        email: data.email || ''
+      });
       setShowProfileModal(false);
     } catch(e) { console.error(e); } finally { setIsEditing(false); }
   };
@@ -144,14 +136,13 @@ export default function AdminDashboard() {
       reader.onload = async (event) => {
         const base64 = event.target.result;
         setAdminProfile(prev => ({ ...prev, avatar: base64 }));
-        // Persist to Supabase using the stored row ID
-        const query = supabase
-          .from('configuracion_admin')
-          .update({ avatar: base64, actualizado_en: new Date().toISOString() });
-        const result = adminRowId
-          ? await query.eq('id', adminRowId)
-          : await query.not('id', 'is', null);
-        if (result.error) console.error('Save avatar error:', result.error);
+        
+        // Save using backend API directly
+        await fetch(`${SOCKET_URL}/api/admin/settings`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...adminProfile, avatar: base64 })
+        });
       };
       reader.readAsDataURL(file);
     } catch(e) { console.error('Avatar upload failed:', e); }

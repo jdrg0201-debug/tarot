@@ -1,12 +1,8 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import ChatInterface from '@/components/chat/ChatInterface';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
 
 export default function ChatPage() {
   const [userId, setUserId] = useState('');
@@ -21,24 +17,16 @@ export default function ChatPage() {
     }
     setUserId(storedId);
 
-    // Load admin profile from Supabase
-    const loadAdminSettings = async () => {
-      try {
-        const { data } = await supabase
-          .from('configuracion_admin')
-          .select('nombre, avatar')
-          .single();
-        if (data) {
-          setAdminSettings({
-            name: data.nombre || 'Maestro',
-            avatar: data.avatar || ''
-          });
-        }
-      } catch (e) {
-        // use defaults
-      }
-    };
-    loadAdminSettings();
+    // Load admin profile from backend
+    fetch(`${SOCKET_URL}/api/admin/settings`)
+      .then(res => res.json())
+      .then(data => {
+        setAdminSettings({
+          name: data.name || 'Maestro',
+          avatar: data.avatar || ''
+        });
+      })
+      .catch(() => {});
   }, []);
 
   if (!userId) return null;
