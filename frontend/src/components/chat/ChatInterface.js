@@ -383,23 +383,34 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
       {/* Input Area */}
       <div className="p-3 bg-dark-800 border-t border-white/5 shrink-0 z-10">
         {mediaPreview && (
-          <div className="mb-3 relative w-fit rounded-xl overflow-hidden bg-dark-900 border border-white/10 pr-10">
+          <div className="mb-3 flex items-center justify-between w-full max-w-[300px] bg-dark-900 border border-white/10 rounded-xl p-2 shadow-lg">
              {mediaFile?.type?.startsWith('image/') ? (
-               <div className="w-20 h-20">
+               <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
                  <img src={mediaPreview} alt="preview" className="object-cover w-full h-full" />
                </div>
              ) : (
-               <div className="pl-3 pr-1 py-1">
+               <div className="flex-1 overflow-hidden shrink-0">
                  <CustomAudioMessage src={mediaPreview} />
                </div>
              )}
-             <button 
-               onClick={() => { setMediaPreview(null); setMediaFile(null); }}
-               className="absolute top-1/2 -translate-y-1/2 right-2.5 bg-red-500/80 hover:bg-red-500 p-1.5 rounded-full text-white transition-colors z-20 shadow-lg"
-               title="Eliminar archivo"
-             >
-               <X size={14} />
-             </button>
+             <div className="flex flex-col gap-2 shrink-0 ml-3">
+               <button 
+                 type="button"
+                 onClick={() => sendMessage(null)}
+                 className="bg-gold-500 hover:bg-gold-400 p-2 rounded-full text-black transition-colors shadow-md flex items-center justify-center translate-x-1"
+                 title="Enviar adjunto"
+               >
+                 <Send size={16} className="-ml-0.5" />
+               </button>
+               <button 
+                 type="button"
+                 onClick={() => { setMediaPreview(null); setMediaFile(null); }}
+                 className="bg-red-500/80 hover:bg-red-500 p-2 rounded-full text-white transition-colors shadow-md flex items-center justify-center translate-x-1"
+                 title="Eliminar archivo"
+               >
+                 <Trash size={16} />
+               </button>
+             </div>
           </div>
         )}
         {role === 'admin' && (
@@ -464,16 +475,20 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
               />
             )}
 
-            {inputText.trim() || mediaPreview ? (
+            {!!(inputText.trim() || mediaPreview || mediaFile) && (
                <button 
                 type="submit" 
+                key="send-btn"
                 className="p-2 bg-gradient-to-r from-gold-500 to-yellow-300 text-black rounded-full hover:scale-105 transition shadow-[0_0_10px_rgba(212,175,55,0.4)]"
                >
                  <Send size={18} className="translate-x-[1px]" />
                </button>
-            ) : (
+            )}
+            
+            {!(inputText.trim() || mediaPreview || mediaFile) && (
                <button 
                 type="button" 
+                key="mic-btn"
                 onClick={isRecording ? stopRecording : startRecording}
                 className={`p-2 rounded-full transition ${isRecording ? 'text-red-500 animate-pulse bg-red-500/10' : 'text-gray-400 hover:text-white'}`}
                >
