@@ -33,13 +33,18 @@ export default function ChatPage() {
 
   return (
     <div
-      className="bg-[#0a0a0a] flex flex-col items-center justify-center relative overflow-hidden"
-      style={{ height: '100dvh' }}
+      className="bg-[#0a0a0a] flex flex-col items-center justify-center fixed inset-0 overflow-hidden"
     >
       {/* Decorative background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1a1a1a_0%,_transparent_50%)] opacity-30 pointer-events-none" />
 
-      <div className="w-full h-full flex flex-col min-h-0 md:max-w-lg md:h-[90vh] md:rounded-3xl overflow-hidden md:border md:border-white/5 md:shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative z-10">
+      <div 
+        className="w-full h-full flex flex-col min-h-0 md:max-w-lg md:h-[90vh] md:rounded-3xl overflow-hidden md:border md:border-white/5 md:shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative z-10"
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        }}
+      >
         <ChatInterface userId={userId} role="user" receiverId="admin" adminSettings={adminSettings} />
       </div>
     </div>
