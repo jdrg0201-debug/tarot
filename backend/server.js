@@ -266,9 +266,14 @@ io.on('connection', (socket) => {
     }
 
     const mapped = mapMessage(msg);
-    io.to(senderId).emit('receive_message', mapped);
-    if (receiverId !== 'admin') io.to(receiverId).emit('receive_message', mapped);
-    else io.to('admins').emit('receive_message', mapped);
+    const rooms = [senderId];
+    if (receiverId === 'admin') {
+      rooms.push('admins');
+    } else {
+      rooms.push(receiverId);
+    }
+    
+    io.to(rooms).emit('receive_message', mapped);
   });
 
   socket.on('disconnect', async () => {

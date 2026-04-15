@@ -117,15 +117,17 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+  const socketRef = useRef(null);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
   // Socket connect and fetch initial
   useEffect(() => {
-    socket = io(SOCKET_URL);
+    const s = io(SOCKET_URL);
+    socketRef.current = s;
     
-    socket.emit('join', { userId: activeChat || userId, role });
+    s.emit('join', { userId: activeChat || userId, role });
 
     // Fetch previous messages
     const fetchMessages = async () => {
@@ -140,13 +142,12 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     };
     fetchMessages();
 
-    // Automated initial messages for user
+    // Auto-messages logic
     if (role === 'user') {
       const autoMessages = [
-        { delay: 3000, text: 'Estoy revisando tu caso...' },
-        { delay: 7000, text: 'Ya tengo una percepción inicial...' },
-        { delay: 11000, text: 'Veo que hay una conexión que no se ha cerrado...' },
-        { delay: 15000, text: 'El maestro ya está revisando tu caso.\n\nEspera aquí en el chat su respuesta.\n\nSi tarda un poco, puede que esté atendiendo otro caso. En ese caso, te escribirá a tu WhatsApp.' }
+        { text: "Estoy revisando tu caso...", delay: 2000 },
+        { text: "Ya tengo una percepción inicial...", delay: 5000 },
+        { text: "Veo que hay una conexión que no se ha cerrado...", delay: 8000 }
       ];
 
       autoMessages.forEach((msg, i) => {
@@ -156,38 +157,32 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
             if (exists) return prev;
             return [...prev, { _id: `auto${i}`, senderId: 'admin', text: msg.text, createdAt: new Date() }];
           });
-          
-          if (i < autoMessages.length - 1) {
-            setTheirTyping(true);
-            setTimeout(() => setTheirTyping(false), 2000);
-          } else {
-             setTheirTyping(false);
-          }
         }, msg.delay);
       });
     }
 
-    socket.on('receive_message', (message) => {
+    s.on('receive_message', (message) => {
       // Validate correct chat window
       if (role === 'admin' && activeChat && message.senderId !== activeChat && message.receiverId !== activeChat) return;
       
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+        if (prev.some(m => m._id === message._id)) return prev;
+        return [...prev, message];
+      });
       
       // Play sound
       try {
         if (message.senderId !== (role === 'admin' ? 'admin' : userId)) {
           new Audio('/sounds/receive.mp3').play().catch(()=>{});
         }
-      } catch(e){}
+      } catch(e) {}
     });
 
-    socket.on(role === 'user' ? 'admin_typing' : 'user_typing', (data) => {
-      if (role === 'admin' && activeChat && data.userId !== activeChat) return;
-      setTheirTyping(data.isTyping);
-    });
+    s.on('user_typing', ({ isTyping }) => setTheirTyping(isTyping));
+    s.on('admin_typing', ({ isTyping }) => setTheirTyping(isTyping));
 
     return () => {
-      socket.disconnect();
+      s.disconnect();
     };
   }, [userId, role, activeChat]);
 
@@ -200,13 +195,13 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     
     if (!isTyping) {
       setIsTyping(true);
-      socket.emit('typing', { userId: activeChat || userId, isTyping: true, role });
+      socketRef.current?.emit('typing', { userId: activeChat || userId, isTyping: true, role });
     }
 
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      socket.emit('typing', { userId: activeChat || userId, isTyping: false, role });
+      socketRef.current?.emit('typing', { userId: activeChat || userId, isTyping: false, role });
     }, 1500);
   };
 
@@ -247,13 +242,13 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
       mediaType
     };
 
-    socket.emit('send_message', messageData);
+    socketRef.current?.emit('send_message', messageData);
     
     if (!customText) {
       setInputText('');
       setMediaFile(null);
       setMediaPreview(null);
-      socket.emit('typing', { userId: activeChat || userId, isTyping: false, role });
+      socketRef.current?.emit('typing', { userId: activeChat || userId, isTyping: false, role });
     }
   };
 
