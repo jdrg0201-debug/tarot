@@ -162,20 +162,23 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     }
 
     s.on('receive_message', (message) => {
-      // Validate correct chat window
-      if (role === 'admin' && activeChat && message.senderId !== activeChat && message.receiverId !== activeChat) return;
-      
-      setMessages((prev) => {
-        if (prev.some(m => m._id === message._id)) return prev;
-        return [...prev, message];
-      });
-      
-      // Play sound
       try {
+        if (!message || !message.senderId) return;
+        // Validate correct chat window
+        if (role === 'admin' && activeChat && message.senderId !== activeChat && message.receiverId !== activeChat) return;
+        
+        setMessages((prev) => {
+          if (prev.some(m => m._id === message._id)) return prev;
+          return [...prev, message];
+        });
+        
+        // Play sound
         if (message.senderId !== (role === 'admin' ? 'admin' : userId)) {
           new Audio('/sounds/receive.mp3').play().catch(()=>{});
         }
-      } catch(e) {}
+      } catch (err) {
+        console.error("Error in receive_message:", err);
+      }
     });
 
     s.on('user_typing', ({ isTyping }) => setTheirTyping(isTyping));
@@ -222,33 +225,37 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
   };
 
   const sendMessage = async (e, customText = null) => {
-    if (e) e.preventDefault();
-    const textToSend = typeof customText === 'string' ? customText : inputText;
-    if (!textToSend.trim() && !mediaFile) return;
+    try {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      const textToSend = typeof customText === 'string' ? customText : inputText;
+      if (!textToSend?.trim() && !mediaFile) return;
 
-    let mediaUrl = null;
-    let mediaType = null;
+      let mediaUrl = null;
+      let mediaType = null;
 
-    if (mediaFile) {
-      mediaUrl = await uploadFile(mediaFile);
-      mediaType = mediaFile.type.startsWith('image/') ? 'image' : 'audio';
-    }
+      if (mediaFile) {
+        mediaUrl = await uploadFile(mediaFile);
+        mediaType = mediaFile?.type?.startsWith('image/') ? 'image' : 'audio';
+      }
 
-    const messageData = {
-      senderId: role === 'admin' ? 'admin' : userId,
-      receiverId: role === 'admin' ? (activeChat || receiverId) : 'admin',
-      text: textToSend,
-      mediaUrl,
-      mediaType
-    };
+      const messageData = {
+        senderId: role === 'admin' ? 'admin' : userId,
+        receiverId: role === 'admin' ? (activeChat || receiverId) : 'admin',
+        text: textToSend || "",
+        mediaUrl,
+        mediaType
+      };
 
-    socketRef.current?.emit('send_message', messageData);
-    
-    if (!customText) {
-      setInputText('');
-      setMediaFile(null);
-      setMediaPreview(null);
-      socketRef.current?.emit('typing', { userId: activeChat || userId, isTyping: false, role });
+      socketRef.current?.emit('send_message', messageData);
+      
+      if (!customText) {
+        setInputText('');
+        setMediaFile(null);
+        setMediaPreview(null);
+        socketRef.current?.emit('typing', { userId: activeChat || userId, isTyping: false, role });
+      }
+    } catch (err) {
+      console.error("Critical error in sendMessage:", err);
     }
   };
 
