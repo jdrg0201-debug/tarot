@@ -8,9 +8,7 @@ export default function TarotPage() {
   const router = useRouter();
   const [selected, setSelected] = useState(null);
   const [revealedCard, setRevealedCard] = useState(null);
-  const [isFlipping, setIsFlipping] = useState(false);
 
-  // Pool of available cards (must match the absolute paths in /public/images/tarot/)
   const tarotCards = [
     "/images/tarot/card1.png",
     "/images/tarot/card2.png",
@@ -23,7 +21,7 @@ export default function TarotPage() {
     "/images/tarot/card9.png"
   ];
 
-  // Pre-load images as soon as component mounts
+  // Pre-load all tarot images on mount
   useEffect(() => {
     tarotCards.forEach(src => {
       const img = new Image();
@@ -33,31 +31,30 @@ export default function TarotPage() {
 
   const handleSelect = (index) => {
     if (selected !== null) return;
-    
-    // Choose the random mystery image immediately
+
     const randomPath = tarotCards[Math.floor(Math.random() * tarotCards.length)];
-    
     setRevealedCard(randomPath);
     setSelected(index);
-    setIsFlipping(true);
-    
-    // Sound interaction
+
     playSound('chime');
-    setTimeout(() => playSound('sparkle'), 600);
-    
-    // Auto-advance ritual
+    setTimeout(() => playSound('sparkle'), 700);
+
+    // Navigate to quiz after flip completes
     setTimeout(() => {
       router.push('/quiz');
-    }, 9000);
+    }, 4500);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-white p-6 relative overflow-hidden bg-transparent" style={{ perspective: '2000px' }}>
-      
-      {/* Title section */}
-      <motion.div 
+    <div
+      className="flex flex-col items-center justify-center min-h-screen text-white p-6 relative overflow-hidden bg-transparent"
+      style={{ perspective: '1200px' }}
+    >
+      {/* Title */}
+      <motion.div
         initial={{ opacity: 0, y: -20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 1 }}
         className="text-center mb-16 z-20"
       >
         <h1 className="font-serif text-3xl md:text-6xl text-gold-500 mb-6 tracking-[0.4em] uppercase text-mystic-glow">
@@ -68,99 +65,123 @@ export default function TarotPage() {
         </p>
       </motion.div>
 
-      {/* 3 Interactive Cards */}
-      <div className="flex flex-wrap justify-center gap-8 md:gap-16 z-10 max-w-7xl">
+      {/* 3 Cards */}
+      <div className="flex flex-wrap justify-center gap-8 md:gap-16 z-10">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ 
-              opacity: 1, 
-              scale: selected === i ? 1.25 : 1,
-              rotateY: selected === i ? 180 : 0,
-              y: selected === null ? 0 : (selected === i ? -60 : 0),
-              filter: selected === null ? "blur(0px)" : (selected === i ? "blur(0px)" : "blur(12px)")
+            initial={{ opacity: 0, y: 40 }}
+            animate={{
+              opacity: selected !== null && selected !== i ? 0.15 : 1,
+              y: 0,
+              scale: selected === i ? 1.15 : 1,
             }}
-            transition={{ 
-              rotateY: { duration: 1.8, ease: [0.6, 0.05, -0.01, 0.9] },
-              scale: { duration: 0.8 },
-              opacity: { delay: i * 0.3 }
-            }}
-            whileHover={selected === null ? { 
-              y: -50, 
-              scale: 1.05,
-              transition: { duration: 0.4 }
-            } : {}}
-            onHoverStart={() => selected === null && playSound('whoosh')}
-            onClick={() => handleSelect(i)}
-            className={`relative w-64 h-96 md:w-80 md:h-[30rem] cursor-pointer transform-gpu
+            transition={{ delay: i * 0.25, duration: 0.6 }}
+            className={`relative w-52 h-80 md:w-72 md:h-[28rem] cursor-pointer
               ${selected === i ? 'z-50' : 'z-10'}
-              ${selected !== null && selected !== i ? 'opacity-20 pointer-events-none' : 'opacity-100'}
+              ${selected !== null && selected !== i ? 'pointer-events-none' : ''}
             `}
-            style={{ transformStyle: 'preserve-3d' }}
+            style={{ perspective: '1200px' }}
+            onClick={() => handleSelect(i)}
           >
-            {/* BACK FACE */}
-            <div 
-              className="absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden glass-mystic p-3 border-2 border-gold-500/20 shadow-2xl bg-[#050505]"
-              style={{ backfaceVisibility: 'hidden' }}
+            {/* CSS flip container */}
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                transformStyle: 'preserve-3d',
+                transition: selected === i
+                  ? 'transform 1.2s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                  : 'none',
+                transform: selected === i ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                willChange: 'transform',
+              }}
             >
-               <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
-                 <img 
-                   src="/images/card-back.png" 
-                   alt="Arcano" 
-                   className="w-full h-full object-cover opacity-80"
-                   loading="eager"
-                 />
-                 <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/40 via-transparent to-gold-500/5 mix-blend-color-dodge" />
-               </div>
-            </div>
+              {/* BACK FACE */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  borderRadius: '2rem',
+                  overflow: 'hidden',
+                  border: '2px solid rgba(212,175,55,0.2)',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                  background: '#050510',
+                }}
+              >
+                <img
+                  src="/images/card-back.png"
+                  alt="Arcano"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}
+                  loading="eager"
+                />
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(135deg, rgba(88,28,135,0.3), transparent, rgba(212,175,55,0.05))',
+                  mixBlendMode: 'color-dodge'
+                }} />
 
-            {/* FRONT FACE (Shown on Flip) */}
-            <div 
-              className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-black border-2 border-gold-500 overflow-hidden shadow-[0_0_120px_rgba(212,175,55,0.4)]"
-              style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
-            >
-               {selected === i && revealedCard && (
-                 <div className="w-full h-full relative flex items-center justify-center">
-                    {/* High-quality revealed card */}
-                    <img 
-                       src={revealedCard} 
-                       className="w-full h-full object-cover"
-                       alt="Mandala del Destino"
-                       loading="eager"
-                    />
-                    
-                    {/* Final mystic layer for depth */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] pointer-events-none" />
-                    <motion.div 
-                       initial={{ opacity: 0 }} 
-                       animate={{ opacity: 1 }} 
-                       transition={{ delay: 0.8, duration: 1 }}
-                       className="absolute inset-0 bg-gold-500/5 mix-blend-overlay"
-                    />
-                 </div>
-               )}
+                {/* Hover glow when not selected */}
+                {selected === null && (
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: '2rem',
+                    boxShadow: 'inset 0 0 40px rgba(212,175,55,0.0)',
+                    transition: 'box-shadow 0.3s ease',
+                  }} className="card-hover-glow" />
+                )}
+              </div>
+
+              {/* FRONT FACE */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  borderRadius: '2rem',
+                  overflow: 'hidden',
+                  border: '2px solid rgba(212,175,55,0.7)',
+                  boxShadow: '0 0 80px rgba(212,175,55,0.35)',
+                  background: '#000',
+                }}
+              >
+                {revealedCard && (
+                  <img
+                    src={revealedCard}
+                    alt="Carta del Tarot"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    loading="eager"
+                  />
+                )}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)',
+                  pointerEvents: 'none',
+                }} />
+              </div>
             </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Confirmation Message */}
+      {/* Message after selection */}
       <AnimatePresence>
         {selected !== null && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 2.2, duration: 1.2 }}
-            className="mt-20 text-center z-20 max-w-2xl px-10"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 1 }}
+            className="mt-16 text-center z-20 max-w-2xl px-6"
           >
-            <motion.p 
-              className="font-serif text-3xl md:text-5xl text-white leading-relaxed text-mystic-glow"
-            >
+            <p className="font-serif text-2xl md:text-4xl text-white leading-relaxed text-mystic-glow">
               Las sombras se han disipado... tu verdad ha hablado.
-            </motion.p>
-            <div className="h-px w-32 bg-gold-500/50 mx-auto mt-8" />
-            <p className="text-gold-500 text-[10px] mt-8 italic font-sans tracking-[0.6em] uppercase font-bold animate-pulse">
+            </p>
+            <div className="h-px w-24 bg-gold-500/50 mx-auto mt-6" />
+            <p className="text-gold-500 text-[10px] mt-6 italic font-sans tracking-[0.6em] uppercase font-bold animate-pulse">
               Interpretando fuerzas astrales...
             </p>
           </motion.div>
