@@ -1,0 +1,12 @@
+{
+  "name": "tarot-platform",
+  "version": "1.0.0",
+  "description": "Plataforma CRM Tarot",
+  "scripts": {
+    "postinstall": "cd backend && npm install --only=production",
+    "start": "cd backend && node server.js"
+  },
+  "engines": {
+    "node": "20"
+  }
+}
