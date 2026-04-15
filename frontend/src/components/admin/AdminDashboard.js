@@ -69,9 +69,20 @@ export default function AdminDashboard() {
       .then(res => res.json())
       .then(data => setQuickReplies(data));
 
-    fetch(`${SOCKET_URL}/api/admin/settings`)
-      .then(res => res.json())
-      .then(data => setAdminProfile(data));
+    // Load admin settings directly from Supabase (backend not required)
+    supabase
+      .from('configuracion_admin')
+      .select('nombre, avatar, email')
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setAdminProfile({
+            name: data.nombre || 'El Maestro',
+            avatar: data.avatar || '',
+            email: data.email || ''
+          });
+        }
+      });
 
     s.on('user_updated', (user) => {
       setUsers(prev => {
@@ -125,19 +136,18 @@ export default function AdminDashboard() {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      // Upload directly to Supabase Storage
-      const ext = file.name.split('.').pop();
-      const fileName = `avatar_${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-      if (error) throw error;
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-      const publicUrl = urlData.publicUrl;
-      setAdminProfile(prev => ({ ...prev, avatar: publicUrl }));
+      // Convert to base64 and store directly in Supabase table (no Storage needed)
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result; // data:image/jpeg;base64,...
+        setAdminProfile(prev => ({ ...prev, avatar: base64 }));
+        // Persist immediately to Supabase
+        await supabase
+          .from('configuracion_admin')
+          .update({ avatar: base64, actualizado_en: new Date().toISOString() })
+          .neq('id', 0);
+      };
+      reader.readAsDataURL(file);
     } catch(e) { console.error('Avatar upload failed:', e); }
   };
 
