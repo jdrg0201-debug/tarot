@@ -105,7 +105,7 @@ const CustomAudioMessage = ({ src }) => {
 };
 
 
-export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, quickReplies = [], onManageQuickReplies, adminSettings = {} }) {
+export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, chatName = null, quickReplies = [], onManageQuickReplies, adminSettings = {} }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -329,7 +329,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
           </div>
           <div>
             <h3 className="text-gold-500 font-serif text-lg tracking-wide drop-shadow-[0_0_5px_rgba(212,175,55,0.3)]">
-              {role === 'user' ? (adminSettings?.name || 'Maestro') : `Chat con ${activeChat}`}
+              {role === 'user' ? (adminSettings?.name || 'Maestro') : `Chat con ${chatName || activeChat}`}
             </h3>
             <p className="text-[10px] text-green-400 flex items-center gap-1.5 font-bold uppercase tracking-widest">
               <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,1)] animate-pulse" /> en línea
