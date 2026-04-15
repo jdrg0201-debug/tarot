@@ -226,6 +226,20 @@ export default function AdminDashboard() {
     window.open(`https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
   };
 
+  // --- STATISTICS CALCULATIONS ---
+  const totalLeads = users.length;
+  const statusCounts = {
+    nuevo: users.filter(u => u.crmStatus === 'nuevo' || !u.crmStatus).length,
+    conversacion: users.filter(u => u.crmStatus === 'conversacion').length,
+    caliente: users.filter(u => u.crmStatus === 'caliente').length,
+    cerrado: users.filter(u => u.crmStatus === 'cerrado').length,
+    perdido: users.filter(u => u.crmStatus === 'perdido').length,
+  };
+  const interactedCount = statusCounts.conversacion + statusCounts.caliente + statusCounts.cerrado;
+  const unrespondedCount = statusCounts.nuevo;
+  const whatsappAvailable = users.filter(u => !!u.phone).length;
+
+
   const filteredUsers = users
     .filter(u => {
       if (showArchived) return u.isArchived;
@@ -394,9 +408,76 @@ export default function AdminDashboard() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-600 gap-4">
-            <div className="w-20 h-20 bg-dark-900 border border-white/5 rounded-full flex items-center justify-center opacity-20 shadow-[0_0_50px_p-gold]"><MessageSquare size={40} className="text-gold-500" /></div>
-            <p className="text-[10px] uppercase font-serif tracking-widest italic animate-pulse">Aguardando señales del destino...</p>
+          <div className="flex-1 flex flex-col items-center justify-start xl:justify-center p-4 lg:p-12 overflow-y-auto custom-scrollbar relative">
+             {/* Background ambiances */}
+             <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold-500/5 blur-[150px] rounded-full pointer-events-none" />
+             
+             <div className="w-full max-w-4xl z-10 space-y-6 lg:space-y-10 mt-6 lg:mt-0 pb-12">
+                <div className="text-center mb-6 lg:mb-10 mt-4 lg:mt-0">
+                   <h2 className="text-2xl lg:text-4xl font-serif text-gold-500 tracking-[0.2em] uppercase mb-2">Visión del Destino</h2>
+                   <p className="text-[9px] lg:text-xs text-gray-400 font-serif tracking-[0.3em] uppercase opacity-70">Resumen Estadístico de Almas y Conexiones</p>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                   <div className="bg-dark-900 border border-white/5 rounded-2xl p-5 lg:p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden group hover:border-gold-500/30 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all pointer-events-none" />
+                      <div className="text-blue-500 mb-3"><Users size={24} strokeWidth={1.5} /></div>
+                      <div className="text-3xl font-serif text-white mb-1">{totalLeads}</div>
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Total Almas</div>
+                   </div>
+                   <div className="bg-dark-900 border border-white/5 rounded-2xl p-5 lg:p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden group hover:border-gold-500/30 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-all pointer-events-none" />
+                      <div className="text-green-500 mb-3"><Phone size={24} strokeWidth={1.5} /></div>
+                      <div className="text-3xl font-serif text-white mb-1">{whatsappAvailable}</div>
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Tienen WhatsApp</div>
+                   </div>
+                   <div className="bg-dark-900 border border-white/5 rounded-2xl p-5 lg:p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden group hover:border-gold-500/30 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-yellow-500/10 rounded-full blur-xl group-hover:bg-yellow-500/20 transition-all pointer-events-none" />
+                      <div className="text-yellow-500 mb-3"><MessageSquare size={24} strokeWidth={1.5} /></div>
+                      <div className="text-3xl font-serif text-white mb-1">{interactedCount}</div>
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Atendidos</div>
+                   </div>
+                   <div className="bg-dark-900 border border-white/5 rounded-2xl p-5 lg:p-6 shadow-2xl flex flex-col items-center text-center relative overflow-hidden group hover:border-gold-500/30 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-16 h-16 bg-red-500/10 rounded-full blur-xl group-hover:bg-red-500/20 transition-all pointer-events-none" />
+                      <div className="text-red-500 mb-3"><AlertCircle size={24} strokeWidth={1.5} /></div>
+                      <div className="text-3xl font-serif text-white mb-1">{unrespondedCount}</div>
+                      <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Sin Responder</div>
+                   </div>
+                </div>
+
+                <div className="bg-dark-900 border border-white/5 rounded-2xl p-6 lg:p-10 shadow-2xl mt-8">
+                   <div className="flex items-center justify-between mb-8">
+                     <h3 className="text-[10px] text-gold-500 uppercase tracking-widest font-bold flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-gold-500" /> Estado del Pipeline</h3>
+                     <span className="text-[9px] text-gray-600 font-mono tracking-wider">{totalLeads} TOTAL</span>
+                   </div>
+                   <div className="space-y-5">
+                      {Object.entries(CRM_STATUSES).map(([key, value]) => {
+                         const count = statusCounts[key];
+                         const max = Math.max(totalLeads, 1);
+                         const percentage = (count / max) * 100;
+                         return (
+                           <div key={key} className="flex items-center gap-4 group">
+                              <div className="w-24 lg:w-36 text-right flex items-center justify-end gap-2">
+                                <value.icon size={12} className="text-gray-500 group-hover:text-gold-500 transition-colors hidden sm:block delay-75" />
+                                <span className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-wider group-hover:text-white transition-colors">{value.label}</span>
+                              </div>
+                              <div className="flex-1 h-2 lg:h-2.5 rounded-full overflow-hidden bg-dark-950 border border-white/5 relative">
+                                 <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${percentage}%` }}
+                                    transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                                    className={`absolute left-0 top-0 bottom-0 ${value.color} shadow-[0_0_10px_currentColor]`}
+                                 />
+                              </div>
+                              <div className="w-8 lg:w-12 text-left">
+                                <span className="text-[10px] lg:text-xs font-mono text-white opacity-80">{count}</span>
+                              </div>
+                           </div>
+                         )
+                      })}
+                   </div>
+                </div>
+             </div>
           </div>
         )}
 
