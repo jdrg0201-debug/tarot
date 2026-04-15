@@ -12,7 +12,7 @@ export default function Home() {
     const timers = [
       setTimeout(() => { setStep(1); playSound('whoosh'); }, 1000),
       setTimeout(() => { setStep(2); playSound('whoosh'); }, 4000),
-      setTimeout(() => { setStep(3); playSound('sparkle'); }, 7000),
+      setTimeout(() => { setStep(3); playSound('sparkle'); }, 8000),
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
