@@ -356,6 +356,12 @@ export default function AdminDashboard() {
                   </div>
                   <h4 className="text-lg text-white font-serif">{activeUserData?.name || 'Anónimo'}</h4>
                   <p className="text-[10px] text-gray-500 uppercase mt-1 tracking-widest">Desde {formatDistanceToNow(new Date(activeUserData?.createdAt || Date.now()), { locale: es, addSuffix: true })}</p>
+                  {activeUserData?.reason && (
+                    <div className="bg-purple-900/20 border border-purple-500/20 rounded-xl p-3 mt-4 mx-2 text-center">
+                       <span className="text-[9px] text-purple-400 font-bold uppercase tracking-widest block mb-1">Motivo de Consulta</span>
+                       <p className="text-sm font-serif text-gray-200 italic">"{activeUserData.reason}"</p>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-6">
                   <div>
