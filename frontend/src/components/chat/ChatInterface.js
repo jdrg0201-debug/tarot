@@ -2,11 +2,108 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Mic, Image as ImageIcon, Camera, Paperclip, X, StopCircle, PlusCircle } from 'lucide-react';
+import { Send, Mic, Image as ImageIcon, Camera, Paperclip, X, StopCircle, PlusCircle, Play, Pause } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
 let socket;
+
+// Custom WhatsApp-style Audio Player
+const CustomAudioMessage = ({ src }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const audioRef = useRef(null);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const current = audioRef.current.currentTime;
+      setCurrentTime(current);
+      const total = audioRef.current.duration || 1;
+      setProgress((current / total) * 100);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentTime(0);
+  };
+
+  const handleSeek = (e) => {
+    if (audioRef.current) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = clickX / rect.width;
+      audioRef.current.currentTime = percent * audioRef.current.duration;
+      setProgress(percent * 100);
+    }
+  };
+
+  const formatTime = (time) => {
+    if (!time || isNaN(time)) return '0:00';
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="flex items-center gap-3 w-[220px] max-w-full my-1.5">
+      <audio 
+        ref={audioRef} 
+        src={src} 
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
+        className="hidden" 
+      />
+      
+      <button 
+        onClick={togglePlay}
+        className="w-10 h-10 rounded-full flex items-center justify-center bg-gold-500 text-black hover:bg-gold-400 hover:scale-105 transition-all shrink-0 shadow-lg"
+      >
+        {isPlaying ? <Pause size={18} className="fill-current" /> : <Play size={18} className="fill-current translate-x-[1px]" />}
+      </button>
+
+      <div className="flex-1 flex flex-col gap-1.5 justify-center py-1">
+        <div 
+          className="h-1.5 bg-white/20 rounded-full relative cursor-pointer group"
+          onClick={handleSeek}
+        >
+           <div 
+             className="absolute top-0 left-0 h-full bg-gold-500 rounded-full transition-all duration-75 ease-linear flex items-center justify-end"
+             style={{ width: `${progress}%` }}
+           >
+              <div className="w-3 h-3 bg-gold-500 rounded-full shadow-[0_0_10px_rgba(212,175,55,0.8)] -mr-1.5 shrink-0" />
+           </div>
+        </div>
+        <div className="flex justify-between text-[10px] text-white/70 font-mono">
+          <span>{formatTime(currentTime)}</span>
+          <span>{duration ? formatTime(duration) : '--:--'}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, quickReplies = [], onManageQuickReplies, adminSettings = {} }) {
   const [messages, setMessages] = useState([]);
@@ -260,33 +357,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
                      <img src={msg.mediaUrl} alt="attachment" className="rounded-xl mb-2 max-w-full h-auto" />
                    )}
                    {msg.mediaType === 'audio' && msg.mediaUrl && (
-                     <div className="flex flex-col gap-2 min-w-[200px] mb-2 bg-black/20 p-3 rounded-xl border border-white/5">
-                        <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500">
-                             <Mic size={18} />
-                           </div>
-                           <div className="flex-1">
-                             <audio controls src={msg.mediaUrl} className="w-full h-8 custom-audio-player" />
-                           </div>
-                        </div>
-                        <style jsx global>{`
-                          .custom-audio-player::-webkit-media-controls-enclosure {
-                            background-color: transparent;
-                          }
-                          .custom-audio-player::-webkit-media-controls-panel {
-                            background-color: transparent;
-                          }
-                          .custom-audio-player::-webkit-media-controls-play-button {
-                            background-color: #d4af37;
-                            border-radius: 50%;
-                          }
-                          .custom-audio-player::-webkit-media-controls-current-time-display,
-                          .custom-audio-player::-webkit-media-controls-time-remaining-display {
-                            color: #fff;
-                            font-size: 10px;
-                          }
-                        `}</style>
-                     </div>
+                     <CustomAudioMessage src={msg.mediaUrl} />
                    )}
                    {msg.text && <p className="text-sm leading-relaxed">{msg.text}</p>}
                    <span className="text-[10px] opacity-50 block mt-1 text-right">
