@@ -136,29 +136,29 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
         const res = await fetch(`${SOCKET_URL}/api/messages/${idToFetch}`);
         const data = await res.json();
         setMessages(data);
+        
+        // Auto-messages logic: ONLY trigger if this is a brand new chat (no history)
+        if (role === 'user' && data.length === 0) {
+          const autoMessages = [
+            { text: "Hola, soy el Maestro. Veo que el destino te ha guiado hasta el portal con éxito.", delay: 2000 },
+            { text: "Deseo ayudarte a encontrar la claridad y resolver lo que te aflige. Cuéntame con confianza, ¿qué situación sentimental o espiritual te trajo aquí y cómo puedo guiarte hoy?", delay: 5000 }
+          ];
+
+          autoMessages.forEach((msg, i) => {
+            setTimeout(() => {
+              setMessages(prev => {
+                const exists = prev.find(m => m._id === `auto${i}`);
+                if (exists) return prev;
+                return [...prev, { _id: `auto${i}`, senderId: 'admin', text: msg.text, createdAt: new Date() }];
+              });
+            }, msg.delay);
+          });
+        }
       } catch (err) {
         console.error("Error fetching messages:", err);
       }
     };
     fetchMessages();
-
-    // Auto-messages logic
-    if (role === 'user') {
-      const autoMessages = [
-        { text: "Hola, soy el Maestro. Veo que el destino te ha guiado hasta el portal con éxito.", delay: 2000 },
-        { text: "Deseo ayudarte a encontrar la claridad y resolver lo que te aflige. Cuéntame con confianza, ¿qué situación sentimental o espiritual te trajo aquí y cómo puedo guiarte hoy?", delay: 5000 }
-      ];
-
-      autoMessages.forEach((msg, i) => {
-        setTimeout(() => {
-          setMessages(prev => {
-            const exists = prev.find(m => m._id === `auto${i}`);
-            if (exists) return prev;
-            return [...prev, { _id: `auto${i}`, senderId: 'admin', text: msg.text, createdAt: new Date() }];
-          });
-        }, msg.delay);
-      });
-    }
 
     s.on('receive_message', (message) => {
       try {
