@@ -266,8 +266,8 @@ export default function AdminDashboard() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-dark-800 flex flex-col border-r border-white/5 transition-transform duration-300 transform lg:translate-x-0 lg:static lg:block ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4 border-b border-white/5 bg-dark-900/50">
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-dark-800 flex flex-col border-r border-white/5 transition-transform duration-300 transform lg:translate-x-0 lg:static lg:flex ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-4 border-b border-white/5 bg-dark-900/50 shrink-0">
           <div className="flex justify-between items-center mb-4">
              <h2 className="text-xl font-serif text-gold-500 flex items-center gap-2">
                 <Users size={20} />
@@ -361,8 +361,8 @@ export default function AdminDashboard() {
             </AnimatePresence>
 
             {/* Details Panel Right Sidebar */}
-            <div className={`fixed inset-y-0 right-0 z-50 w-80 bg-dark-800 flex flex-col border-l border-white/5 transition-transform duration-300 transform lg:translate-x-0 lg:static lg:block ${showMobileDetails ? 'translate-x-0' : 'translate-x-full'}`}>
-              <div className="p-4 border-b border-white/5 bg-dark-900/50 flex justify-between items-center">
+            <div className={`fixed inset-y-0 right-0 z-50 w-80 bg-dark-800 flex flex-col border-l border-white/5 transition-transform duration-300 transform xl:translate-x-0 xl:static xl:flex ${showMobileDetails ? 'translate-x-0' : 'translate-x-full'}`}>
+              <div className="p-4 border-b border-white/5 bg-dark-900/50 flex justify-between items-center shrink-0">
                  <h3 className="text-xs font-bold text-gold-500 uppercase tracking-widest">Atributos del Alma</h3>
                  <button onClick={() => setShowMobileDetails(false)} className="lg:hidden p-1 text-gray-500"><XCircle size={18} /></button>
               </div>

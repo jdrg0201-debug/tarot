@@ -303,7 +303,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
   };
 
   return (
-    <div className={`flex flex-col min-h-0 w-full h-full bg-[#111] ${role === 'user' ? 'max-w-md shadow-2xl relative overflow-hidden' : ''}`}>
+    <div className={`flex flex-col min-h-0 w-full flex-1 bg-[#111] ${role === 'user' ? 'max-w-md shadow-2xl relative overflow-hidden' : ''}`}>
       {role === 'user' && (
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-900/50 to-transparent pointer-events-none" />
       )}
