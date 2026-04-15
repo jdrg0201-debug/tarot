@@ -35,6 +35,7 @@ export default function AdminDashboard() {
 
   // Profile Management
   const [adminProfile, setAdminProfile] = useState({ name: 'El Maestro', avatar: '', email: '' });
+  const [adminRowId, setAdminRowId] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -72,10 +73,11 @@ export default function AdminDashboard() {
     // Load admin settings directly from Supabase (backend not required)
     supabase
       .from('configuracion_admin')
-      .select('nombre, avatar, email')
+      .select('id, nombre, avatar, email')
       .single()
       .then(({ data }) => {
         if (data) {
+          setAdminRowId(data.id);
           setAdminProfile({
             name: data.nombre || 'El Maestro',
             avatar: data.avatar || '',
@@ -118,16 +120,18 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsEditing(true);
     try {
-      // Save directly to Supabase (no backend dependency)
-      await supabase
-        .from('configuracion_admin')
-        .update({
-          nombre: adminProfile.name,
-          avatar: adminProfile.avatar,
-          email: adminProfile.email,
-          actualizado_en: new Date().toISOString()
-        })
-        .neq('id', 0); // update the single row
+      const filter = adminRowId ? supabase.from('configuracion_admin').update({
+        nombre: adminProfile.name,
+        avatar: adminProfile.avatar,
+        email: adminProfile.email,
+        actualizado_en: new Date().toISOString()
+      }).eq('id', adminRowId) : supabase.from('configuracion_admin').update({
+        nombre: adminProfile.name,
+        avatar: adminProfile.avatar,
+        email: adminProfile.email,
+        actualizado_en: new Date().toISOString()
+      }).not('id', 'is', null);
+      await filter;
       setShowProfileModal(false);
     } catch(e) { console.error(e); } finally { setIsEditing(false); }
   };
@@ -136,16 +140,18 @@ export default function AdminDashboard() {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      // Convert to base64 and store directly in Supabase table (no Storage needed)
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const base64 = event.target.result; // data:image/jpeg;base64,...
+        const base64 = event.target.result;
         setAdminProfile(prev => ({ ...prev, avatar: base64 }));
-        // Persist immediately to Supabase
-        await supabase
+        // Persist to Supabase using the stored row ID
+        const query = supabase
           .from('configuracion_admin')
-          .update({ avatar: base64, actualizado_en: new Date().toISOString() })
-          .neq('id', 0);
+          .update({ avatar: base64, actualizado_en: new Date().toISOString() });
+        const result = adminRowId
+          ? await query.eq('id', adminRowId)
+          : await query.not('id', 'is', null);
+        if (result.error) console.error('Save avatar error:', result.error);
       };
       reader.readAsDataURL(file);
     } catch(e) { console.error('Avatar upload failed:', e); }
