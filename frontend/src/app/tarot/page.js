@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import { playSound } from '@/components/common/MysticAtmosphere';
 
 export default function TarotPage() {
@@ -113,7 +113,7 @@ export default function TarotPage() {
                   background: '#050510',
                 }}
               >
-                <Image
+                <NextImage
                   src="/images/card-back.png"
                   alt="Arcano"
                   fill
@@ -153,7 +153,7 @@ export default function TarotPage() {
                 }}
               >
                 {revealedCard && (
-                  <Image
+                  <NextImage
                     src={revealedCard}
                     alt="Carta del Tarot"
                     fill
