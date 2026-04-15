@@ -126,9 +126,10 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
   useEffect(() => {
     const s = io(SOCKET_URL);
     socketRef.current = s;
-    
-    s.emit('join', { userId: activeChat || userId, role });
-
+    // Listen for connect event so reconnects (e.g. unlocking phone) rejoin the room
+    s.on('connect', () => {
+      s.emit('join', { userId: activeChat || userId, role });
+    });
     // Fetch previous messages
     const fetchMessages = async () => {
       try {
