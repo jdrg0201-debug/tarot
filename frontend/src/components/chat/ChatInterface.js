@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
 let socket;
 
-export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, quickReplies = [], onManageQuickReplies }) {
+export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, quickReplies = [], onManageQuickReplies, adminSettings = {} }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -212,14 +212,25 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
       {/* Header */}
       <div className="px-4 py-3 bg-dark-800 border-b border-white/5 flex items-center justify-between z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-500 to-purple-600 p-0.5">
-            <div className="w-full h-full bg-dark-900 rounded-full flex items-center justify-center">
-              <span className="text-gold-500 font-serif font-bold text-lg">M</span>
-            </div>
+          {/* Admin avatar */}
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gold-500/40 shrink-0">
+            {adminSettings?.avatar ? (
+              <img
+                src={adminSettings.avatar}
+                alt="Maestro"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-tr from-gold-500 to-purple-600 flex items-center justify-center">
+                <span className="text-black font-serif font-bold text-lg">
+                  {(adminSettings?.name || 'M')[0].toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
           <div>
             <h3 className="text-gold-500 font-serif text-lg tracking-wide drop-shadow-[0_0_5px_rgba(212,175,55,0.3)]">
-              {role === 'user' ? 'Maestro' : `Chat con ${activeChat}`}
+              {role === 'user' ? (adminSettings?.name || 'Maestro') : `Chat con ${activeChat}`}
             </h3>
             <p className="text-[10px] text-green-400 flex items-center gap-1.5 font-bold uppercase tracking-widest">
               <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,1)] animate-pulse" /> en línea
