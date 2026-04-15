@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Mic, Image as ImageIcon, Camera, Paperclip, X, StopCircle, PlusCircle, Play, Pause } from 'lucide-react';
+import { Send, Mic, Image as ImageIcon, Camera, Paperclip, X, StopCircle, PlusCircle, Play, Pause, Trash } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
