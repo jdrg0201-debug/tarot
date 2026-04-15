@@ -366,7 +366,7 @@ export default function AdminDashboard() {
         {activeChat ? (
           <div className="flex-1 flex relative min-h-0">
             <div className={`flex-1 flex flex-col min-w-0 min-h-0 transition-opacity duration-300 ${showMobileDetails ? 'opacity-20 lg:opacity-100' : 'opacity-100'}`}>
-               <ChatInterface userId="admin" role="admin" receiverId={activeChat} activeChat={activeChat} chatName={activeUserData?.name} quickReplies={quickReplies} onManageQuickReplies={() => setShowQuickReplyManager(true)} />
+               <ChatInterface userId="admin" role="admin" receiverId={activeChat} activeChat={activeChat} chatName={activeUserData?.name} quickReplies={quickReplies} onManageQuickReplies={() => setShowQuickReplyManager(true)} onBack={() => { setActiveChat(null); setShowMobileSidebar(true); }} onShowMobileInfo={() => setShowMobileDetails(true)} />
             </div>
 
             <AnimatePresence>

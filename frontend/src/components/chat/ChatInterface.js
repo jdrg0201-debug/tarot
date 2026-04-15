@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Mic, Image as ImageIcon, Camera, Paperclip, X, StopCircle, PlusCircle, Play, Pause, Trash } from 'lucide-react';
+import { Send, Mic, Image as ImageIcon, Camera, Paperclip, X, StopCircle, PlusCircle, Play, Pause, Trash, ChevronLeft, Info } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
@@ -105,7 +105,7 @@ const CustomAudioMessage = ({ src }) => {
 };
 
 
-export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, chatName = null, quickReplies = [], onManageQuickReplies, adminSettings = {} }) {
+export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, chatName = null, quickReplies = [], onManageQuickReplies, adminSettings = {}, onBack, onShowMobileInfo }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -314,6 +314,11 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
       {/* Header */}
       <div className="px-4 py-3 bg-dark-800 border-b border-white/5 flex items-center justify-between z-10 shrink-0">
         <div className="flex items-center gap-3">
+          {role === 'admin' && onBack && (
+            <button onClick={onBack} className="lg:hidden p-1.5 -ml-2 text-gray-400 hover:text-white transition-colors">
+              <ChevronLeft size={24} />
+            </button>
+          )}
           {/* Admin avatar */}
           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gold-500/40 shrink-0">
             {adminSettings?.avatar ? (
@@ -339,6 +344,12 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
             </p>
           </div>
         </div>
+        
+        {role === 'admin' && onShowMobileInfo && (
+          <button onClick={onShowMobileInfo} className="lg:hidden p-2 text-gold-500 bg-gold-500/10 rounded-full hover:bg-gold-500/20 transition-colors">
+            <Info size={20} />
+          </button>
+        )}
       </div>
 
       {/* Messages Area */}
