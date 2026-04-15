@@ -19,26 +19,32 @@ export default function RegisterPage() {
     
     playSound('chime');
     setLoading(true);
-    try {
-      let userId = localStorage.getItem('userId');
-      if (!userId) {
-        userId = 'user_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('userId', userId);
-      }
 
-      const res = await fetch('http://localhost:5555/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, name, phone, reason })
-      });
-      
-      if (res.ok) {
-        router.push('/scanner');
+    // Generate/retrieve userId and save data locally first
+    let userId = localStorage.getItem('userId');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('userId', userId);
+    }
+    localStorage.setItem('userName', name);
+    localStorage.setItem('userPhone', phone);
+    localStorage.setItem('userReason', reason);
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+      if (backendUrl) {
+        await fetch(`${backendUrl}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, name, phone, reason })
+        });
       }
     } catch (err) {
-      console.error(err);
+      // Backend error is non-blocking — user still progresses
+      console.warn('Backend registration failed (non-blocking):', err);
     } finally {
       setLoading(false);
+      router.push('/scanner');
     }
   };
 
