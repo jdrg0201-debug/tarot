@@ -131,7 +131,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     const fetchMessages = async () => {
       try {
         const idToFetch = activeChat || userId;
-        const res = await fetch(`http://localhost:5555/api/messages/${idToFetch}`);
+        const res = await fetch(`${SOCKET_URL}/api/messages/${idToFetch}`);
         const data = await res.json();
         setMessages(data);
       } catch (err) {
@@ -214,12 +214,12 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('http://localhost:5555/api/upload', {
+      const res = await fetch(`${SOCKET_URL}/api/upload`, {
         method: 'POST',
         body: formData,
       });
       const data = await res.json();
-      return `http://localhost:5555${data.url}`;
+      return `${SOCKET_URL}${data.url}`;
     } catch (error) {
       console.error('File upload failed', error);
       return null;
