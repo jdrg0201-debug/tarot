@@ -369,20 +369,31 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
               onChange={handleFileChange} 
             />
 
-            <textarea
-              rows={1}
-              value={inputText}
-              onChange={handleTyping}
-              placeholder="Escribe un mensaje..."
-              className="flex-1 bg-transparent text-white placeholder-gray-500 px-3 py-1 outline-none resize-none mx-1 text-sm max-h-24 overflow-y-auto"
-              style={{ minHeight: '36px' }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-            />
+            {isRecording ? (
+              <div className="flex-1 flex items-center gap-4 px-4 overflow-hidden">
+                 <div className="flex items-center gap-1 h-8">
+                   {[...Array(8)].map((_, i) => (
+                     <span key={i} className="w-1.5 bg-red-500 rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: `${Math.random() * 60 + 40}%`, animationDelay: `${i * 0.15}s` }} />
+                   ))}
+                 </div>
+                 <span className="text-red-400 text-xs font-bold tracking-widest uppercase animate-pulse">Grabando Voz...</span>
+              </div>
+            ) : (
+              <textarea
+                rows={1}
+                value={inputText}
+                onChange={handleTyping}
+                placeholder="Escribe un mensaje..."
+                className="flex-1 bg-transparent text-white placeholder-gray-500 px-3 py-1 outline-none resize-none mx-1 text-sm max-h-24 overflow-y-auto"
+                style={{ minHeight: '36px' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+              />
+            )}
 
             {inputText.trim() || mediaFile ? (
                <button 
