@@ -209,7 +209,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
 
   const uploadFile = async (file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name || 'blob_file');
     try {
       const res = await fetch(`${SOCKET_URL}/api/upload`, {
         method: 'POST',
@@ -272,7 +272,10 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        audioBlob.name = `audio.${ext}`;
         setMediaFile(audioBlob);
         setMediaPreview(URL.createObjectURL(audioBlob));
       };
