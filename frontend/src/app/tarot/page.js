@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { playSound } from '@/components/common/MysticAtmosphere';
 
 export default function TarotPage() {
@@ -112,11 +113,13 @@ export default function TarotPage() {
                   background: '#050510',
                 }}
               >
-                <img
+                <Image
                   src="/images/card-back.png"
                   alt="Arcano"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}
-                  loading="eager"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  style={{ objectFit: 'cover', opacity: 0.85 }}
+                  priority
                 />
                 <div style={{
                   position: 'absolute', inset: 0,
@@ -150,11 +153,13 @@ export default function TarotPage() {
                 }}
               >
                 {revealedCard && (
-                  <img
+                  <Image
                     src={revealedCard}
                     alt="Carta del Tarot"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    loading="eager"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    style={{ objectFit: 'cover' }}
+                    priority
                   />
                 )}
                 <div style={{
@@ -164,29 +169,30 @@ export default function TarotPage() {
                 }} />
               </div>
             </div>
+
+            {/* Revealed Message Under Chosen Card */}
+            <AnimatePresence>
+              {selected === i && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.5, duration: 1 }}
+                  className="absolute top-full mt-6 left-1/2 -translate-x-1/2 w-80 text-center pointer-events-none"
+                >
+                  <p className="font-serif text-xl md:text-2xl text-white leading-relaxed text-mystic-glow drop-shadow-xl h-auto">
+                    Tu destino ha sido revelado.
+                  </p>
+                  <p className="text-gold-500 text-[10px] mt-3 italic font-sans tracking-[0.4em] uppercase font-bold animate-pulse drop-shadow-xl">
+                    Interpretando fuerzas...
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
           </motion.div>
         ))}
       </div>
 
-      {/* Message after selection */}
-      <AnimatePresence>
-        {selected !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5, duration: 1 }}
-            className="mt-16 text-center z-20 max-w-2xl px-6"
-          >
-            <p className="font-serif text-2xl md:text-4xl text-white leading-relaxed text-mystic-glow">
-              Las sombras se han disipado... tu verdad ha hablado.
-            </p>
-            <div className="h-px w-24 bg-gold-500/50 mx-auto mt-6" />
-            <p className="text-gold-500 text-[10px] mt-6 italic font-sans tracking-[0.6em] uppercase font-bold animate-pulse">
-              Interpretando fuerzas astrales...
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

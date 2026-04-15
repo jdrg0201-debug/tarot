@@ -145,9 +145,8 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     // Auto-messages logic
     if (role === 'user') {
       const autoMessages = [
-        { text: "Estoy revisando tu caso...", delay: 2000 },
-        { text: "Ya tengo una percepción inicial...", delay: 5000 },
-        { text: "Veo que hay una conexión que no se ha cerrado...", delay: 8000 }
+        { text: "Hola, soy el Maestro. Veo que el destino te ha guiado hasta el portal con éxito.", delay: 2000 },
+        { text: "Deseo ayudarte a encontrar la claridad y resolver lo que te aflige. Cuéntame con confianza, ¿qué situación sentimental o espiritual te trajo aquí y cómo puedo guiarte hoy?", delay: 5000 }
       ];
 
       autoMessages.forEach((msg, i) => {

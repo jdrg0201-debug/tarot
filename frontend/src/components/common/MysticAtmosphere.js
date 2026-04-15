@@ -90,15 +90,6 @@ export default function MysticAtmosphere() {
         transition={{ type: 'spring', damping: 20, stiffness: 250, restDelta: 0.001 }}
       />
 
-      {/* Audio Toggle (Discreet) */}
-      {!isAudioEnabled && !pathname?.includes('/admin') && !pathname?.includes('/chat') && (
-        <button 
-          onClick={enableAudio}
-          className="fixed bottom-4 right-4 z-50 p-2 bg-gold-500/10 border border-gold-500/30 rounded-full text-gold-500 text-[8px] uppercase tracking-widest hover:bg-gold-500/20 transition-all opacity-40 hover:opacity-100"
-        >
-          🔮 Activar Magia
-        </button>
-      )}
     </>
   );
 }
