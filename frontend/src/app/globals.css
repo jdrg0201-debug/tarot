@@ -19,13 +19,15 @@
   }
 }
 
-html, body {
+html {
+  background-color: var(--background);
+}
+
+body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  overflow-x: hidden;
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
 
 /* Custom Scrollbar for Chat */
