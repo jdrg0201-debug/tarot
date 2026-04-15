@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 export const playSound = (type) => {
   const sounds = {
@@ -19,6 +20,7 @@ export default function MysticAtmosphere() {
   const [particles, setParticles] = useState([]);
   const audioRef = useRef(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -89,7 +91,7 @@ export default function MysticAtmosphere() {
       />
 
       {/* Audio Toggle (Discreet) */}
-      {!isAudioEnabled && (
+      {!isAudioEnabled && !pathname?.includes('/admin') && !pathname?.includes('/chat') && (
         <button 
           onClick={enableAudio}
           className="fixed bottom-4 right-4 z-50 p-2 bg-gold-500/10 border border-gold-500/30 rounded-full text-gold-500 text-[8px] uppercase tracking-widest hover:bg-gold-500/20 transition-all opacity-40 hover:opacity-100"

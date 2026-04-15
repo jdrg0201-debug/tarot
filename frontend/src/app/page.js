@@ -65,9 +65,9 @@ export default function Home() {
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0, filter: "blur(20px)" }}
                   animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-                  className="relative mb-16"
+                  className="relative mb-16 px-4"
                 >
-                  <h1 className="font-serif text-5xl md:text-7xl text-gold-500 text-mystic-glow uppercase tracking-[0.3em]">
+                  <h1 className="font-serif text-3xl md:text-6xl text-gold-500 text-mystic-glow uppercase tracking-[0.1em] md:tracking-[0.3em] text-center">
                     Y lo sabes...
                   </h1>
                 </motion.div>

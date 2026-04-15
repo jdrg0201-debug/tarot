@@ -14,7 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} ${cinzel.variable} font-sans bg-cosmic text-white min-h-screen text-foreground`}>
+      <body className={`${inter.variable} ${cinzel.variable} font-sans bg-cosmic text-white min-h-screen text-foreground overflow-x-hidden`}>
         <MysticAtmosphere />
         {children}
       </body>
