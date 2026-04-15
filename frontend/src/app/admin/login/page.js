@@ -4,12 +4,10 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Shield, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { playSound } from '@/components/common/MysticAtmosphere';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+// Admin credentials — change these to customize access
+const ADMIN_EMAIL = 'admin@tarot.com';
+const ADMIN_PASSWORD = 'admin123';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -19,29 +17,15 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     playSound('click-magic');
 
-    try {
-      // Validate credentials directly via Supabase (no backend dependency)
-      let validEmail = 'admin@tarot.com';
-      let validPassword = 'admin123';
-
-      try {
-        const { data: settings } = await supabase
-          .from('configuracion_admin')
-          .select('email, password_hash')
-          .single();
-        if (settings?.email) validEmail = settings.email;
-        if (settings?.password_hash) validPassword = settings.password_hash;
-      } catch (_) {
-        // Use default credentials if Supabase unreachable
-      }
-
-      if (email === validEmail && password === validPassword) {
+    // Small delay for UX effect
+    setTimeout(() => {
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         playSound('sparkle');
         localStorage.setItem('admin_token', 'mistic_token_123');
         router.push('/admin');
@@ -49,11 +33,8 @@ export default function AdminLogin() {
         setError('Acceso denegado. Las credenciales no coinciden.');
         playSound('whoosh');
       }
-    } catch (err) {
-      setError('Hubo un error de conexión espiritual.');
-    } finally {
       setLoading(false);
-    }
+    }, 800);
   };
 
   return (
