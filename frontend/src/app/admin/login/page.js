@@ -5,9 +5,13 @@ import { motion } from 'framer-motion';
 import { Shield, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { playSound } from '@/components/common/MysticAtmosphere';
 
-// Admin credentials — change these to customize access
-const ADMIN_EMAIL = 'admin@tarot.com';
-const ADMIN_PASSWORD = 'admin123';
+// Principal credentials (Supabase)
+const ADMIN_EMAIL = 'angel@tarot.com';
+const ADMIN_PASSWORD = 'MaestroAngel777';
+
+// Backup credentials (Legacy/MongoDB)
+const BACKUP_EMAIL = 'admin@tarot.com';
+const BACKUP_PASSWORD = 'admin123';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -25,7 +29,13 @@ export default function AdminLogin() {
 
     // Small delay for UX effect
     setTimeout(() => {
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPassword = password.trim();
+
+      const isPrimaryMatch = cleanEmail === ADMIN_EMAIL && cleanPassword === ADMIN_PASSWORD;
+      const isBackupMatch = cleanEmail === BACKUP_EMAIL && cleanPassword === BACKUP_PASSWORD;
+
+      if (isPrimaryMatch || isBackupMatch) {
         playSound('sparkle');
         localStorage.setItem('admin_token', 'mistic_token_123');
         router.push('/admin');
@@ -51,7 +61,7 @@ export default function AdminLogin() {
            <div className="w-20 h-20 bg-dark-900 border-2 border-gold-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
               <Shield className="text-gold-500" size={36} />
            </div>
-           <h1 className="text-3xl font-serif text-gold-500 tracking-[0.2em] uppercase text-mystic-glow">Portal Maestro</h1>
+           <h1 className="text-3xl font-serif text-gold-500 tracking-[0.2em] uppercase text-mystic-glow">PANEL ADMINISTRATIVO</h1>
            <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-3 font-bold">Inicia el ritual administrativo</p>
         </div>
 

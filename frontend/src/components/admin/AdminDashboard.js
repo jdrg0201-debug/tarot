@@ -277,10 +277,10 @@ export default function AdminDashboard() {
       <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-dark-800 flex flex-col border-r border-white/5 transition-transform duration-300 transform lg:translate-x-0 lg:static lg:flex ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-white/5 bg-dark-900/50 shrink-0">
           <div className="flex justify-between items-center mb-4">
-             <h2 className="text-xl font-serif text-gold-500 flex items-center gap-2">
+             <h2 className="text-xl font-serif text-gold-500 flex items-center gap-2 uppercase tracking-wider">
                 <Users size={20} />
-                Portal Maestro
-              </h2>
+                PANEL ADMINISTRATIVO
+             </h2>
               <div className="flex items-center gap-2">
                 <button onClick={() => setShowQuickReplyManager(true)} className="p-1.5 text-gold-500/60 hover:text-gold-500 transition-colors" title="Gestor de Respuestas"><PlusCircle size={20} /></button>
                 <button onClick={() => setShowMobileSidebar(false)} className="lg:hidden p-1 text-gray-400"><XCircle size={20} /></button>
