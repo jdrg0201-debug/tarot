@@ -74,10 +74,10 @@ CREATE TABLE IF NOT EXISTS public.respuestas_rapidas (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.configuracion_admin (
   id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  nombre         TEXT DEFAULT 'El Maestro',
+  nombre         TEXT DEFAULT 'Ángel Córdoba, Vidente y Maestro',
   avatar         TEXT DEFAULT '',
-  email          TEXT DEFAULT 'admin@tarot.com',
-  password_hash  TEXT DEFAULT 'admin123',
+  email          TEXT DEFAULT 'angel@tarot.com',
+  password_hash  TEXT DEFAULT 'MaestroAngel777',
   actualizado_en TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -217,9 +217,9 @@ CREATE TRIGGER trg_suscripciones_actualizar
 -- ============================================================
 INSERT INTO public.configuracion_admin (nombre, email, password_hash, avatar)
 VALUES (
-  'El Maestro Arcano',
-  'admin@tarot.com',
-  'admin123',
+  'Ángel Córdoba, Vidente y Maestro',
+  'angel@tarot.com',
+  'MaestroAngel777',
   'https://api.dicebear.com/7.x/personas/svg?seed=maestro'
 )
 ON CONFLICT DO NOTHING;

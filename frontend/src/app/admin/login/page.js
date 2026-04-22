@@ -50,7 +50,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-cosmic flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background pulses */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[150px] animate-pulse" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-900/10 rounded-full blur-[150px] animate-pulse" />
       
       <motion.div 
         initial={{ opacity: 0, y: 30, filter: 'blur(20px)' }}

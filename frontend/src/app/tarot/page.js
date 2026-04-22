@@ -61,7 +61,7 @@ export default function TarotPage() {
         <h1 className="font-serif text-3xl md:text-6xl text-gold-500 mb-6 tracking-[0.4em] uppercase text-mystic-glow">
           Revela tu Destino
         </h1>
-        <p className="font-sans text-purple-200/50 italic tracking-[0.5em] text-[10px] uppercase font-bold">
+        <p className="font-sans text-red-300/50 italic tracking-[0.5em] text-[10px] uppercase font-bold">
           El cosmos ha hablado a través de tu intención sagrada
         </p>
       </motion.div>

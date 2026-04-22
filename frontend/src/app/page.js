@@ -26,7 +26,7 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen text-white overflow-x-hidden overflow-y-auto relative px-6 bg-transparent">
       {/* Mystical Portal Ring */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-gold-500/10 rounded-full animate-pulse pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-purple-500/10 rounded-full animate-[spin_60s_linear_infinite] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-red-600/10 rounded-full animate-[spin_60s_linear_infinite] pointer-events-none" />
 
       <div className="z-10 flex flex-col items-center max-w-4xl w-full">
         <div className="h-64 flex flex-col items-center justify-center text-center">

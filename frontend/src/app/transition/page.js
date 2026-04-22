@@ -34,7 +34,7 @@ export default function TransitionPage() {
             <motion.div 
               animate={{ rotate: -360, scale: [1.2, 1, 1.2] }} 
               transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-              className="absolute w-64 h-64 rounded-full border-[0.5px] border-purple-500/20" 
+              className="absolute w-64 h-64 rounded-full border-[0.5px] border-red-600/20" 
             />
           </div>
 

@@ -238,12 +238,15 @@ app.put('/api/admin/settings', async (req, res) => {
 
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
-  const { data: settings } = await supabase.from('configuracion_admin').select('*').single();
-  const validEmail = settings?.email || 'admin@tarot.com';
-  const validPassword = settings?.password_hash || 'admin123';
+  const cleanEmail = email?.trim().toLowerCase();
+  const cleanPassword = password?.trim();
 
-  if (email === validEmail && password === validPassword) {
-    res.json({ success: true, user: { email, role: 'admin' } });
+  const { data: settings } = await supabase.from('configuracion_admin').select('*').single();
+  const validEmail = (settings?.email || 'angel@tarot.com').toLowerCase();
+  const validPassword = settings?.password_hash || 'MaestroAngel777';
+
+  if (cleanEmail === validEmail && cleanPassword === validPassword) {
+    res.json({ success: true, user: { email: cleanEmail, role: 'admin' } });
   } else {
     res.status(401).json({ error: 'Credenciales inválidas' });
   }
@@ -345,7 +348,7 @@ function mapMessage(m) {
 }
 
 function mapAdminSettings(s) {
-  if (!s) return { name: 'El Maestro', email: 'admin@tarot.com', avatar: '' };
+  if (!s) return { name: 'Ángel Córdoba, Vidente y Maestro', email: 'angel@tarot.com', avatar: '' };
   return { _id: s.id, name: s.nombre, email: s.email, avatar: s.avatar || '', updatedAt: s.actualizado_en };
 }
 

@@ -295,7 +295,7 @@ export default function AdminDashboard() {
           </button>
 
           <div className="flex gap-2 mb-4">
-            <button onClick={() => setTab('chats')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${tab === 'chats' ? 'bg-purple-800 text-white' : 'text-gray-500 hover:text-white'}`}>CHATS</button>
+            <button onClick={() => setTab('chats')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${tab === 'chats' ? 'bg-red-900 text-white' : 'text-gray-500 hover:text-white'}`}>CHATS</button>
             <button onClick={() => setTab('leads')} className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${tab === 'leads' ? 'bg-gold-500 text-black' : 'text-gray-500 hover:text-white'}`}>LEADS</button>
           </div>
 
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
         
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {filteredUsers.map(u => (
-            <div key={u.userId} onClick={() => { setActiveChat(u.userId); setShowMobileSidebar(false); }} className={`p-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/5 ${activeChat === u.userId ? 'bg-purple-900/30 border-l-4 border-gold-500 font-bold' : ''}`}>
+            <div key={u.userId} onClick={() => { setActiveChat(u.userId); setShowMobileSidebar(false); }} className={`p-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/5 ${activeChat === u.userId ? 'bg-red-900/30 border-l-4 border-gold-500 font-bold' : ''}`}>
               <div className="flex justify-between items-center mb-1">
                  <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${u.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-gray-600'}`} />
@@ -384,14 +384,14 @@ export default function AdminDashboard() {
               <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
                 <div className="text-center mb-8">
                   <div className="relative inline-block mb-4">
-                    <div className="w-20 h-20 bg-dark-950 border-2 border-purple-800 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Star className="text-gold-500" size={32} /></div>
+                    <div className="w-20 h-20 bg-dark-950 border-2 border-red-900 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]"><Star className="text-gold-500" size={32} /></div>
                     <div className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-4 border-dark-800 ${activeUserData?.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`} />
                   </div>
                   <h4 className="text-lg text-white font-serif">{activeUserData?.name || 'Anónimo'}</h4>
                   <p className="text-[10px] text-gray-500 uppercase mt-1 tracking-widest">Desde {formatDistanceToNow(new Date(activeUserData?.createdAt || Date.now()), { locale: es, addSuffix: true })}</p>
                   {activeUserData?.reason && (
-                    <div className="bg-purple-900/20 border border-purple-500/20 rounded-xl p-3 mt-4 mx-2 text-center">
-                       <span className="text-[9px] text-purple-400 font-bold uppercase tracking-widest block mb-1">Motivo de Consulta</span>
+                    <div className="bg-red-900/20 border border-red-600/20 rounded-xl p-3 mt-4 mx-2 text-center">
+                       <span className="text-[9px] text-red-500 font-bold uppercase tracking-widest block mb-1">Motivo de Consulta</span>
                        <p className="text-sm font-serif text-gray-200 italic">"{activeUserData.reason}"</p>
                     </div>
                   )}
@@ -573,7 +573,7 @@ export default function AdminDashboard() {
         <div className="fixed bottom-4 right-4 z-[110] flex flex-col gap-2 pointer-events-none">
           <AnimatePresence>
             {notifications.map(n => (
-              <motion.div key={n.id} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} className="bg-purple-900/95 backdrop-blur-md border border-gold-500/30 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs pointer-events-auto">
+              <motion.div key={n.id} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} className="bg-red-900/95 backdrop-blur-md border border-gold-500/30 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs pointer-events-auto">
                 <Bell size={14} className="text-gold-500" /> {n.text}
               </motion.div>
             ))}

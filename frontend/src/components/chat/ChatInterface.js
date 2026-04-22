@@ -308,7 +308,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
   return (
     <div className={`flex flex-col min-h-0 w-full flex-1 bg-[#111] ${role === 'user' ? 'max-w-md shadow-2xl relative overflow-hidden' : ''}`}>
       {role === 'user' && (
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-900/50 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-red-950/50 to-transparent pointer-events-none" />
       )}
       
       {/* Header */}
@@ -328,7 +328,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-tr from-gold-500 to-purple-600 flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-tr from-gold-500 to-red-700 flex items-center justify-center">
                 <span className="text-black font-serif font-bold text-lg">
                   {(adminSettings?.name || 'M')[0].toUpperCase()}
                 </span>
@@ -366,7 +366,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
                >
                  <div className={`max-w-[80%] rounded-2xl p-3 ${
                    isMe 
-                    ? 'bg-purple-800/80 text-white rounded-br-sm shadow-[0_4px_15px_rgba(74,42,122,0.3)]' 
+                    ? 'bg-red-900/80 text-white rounded-br-sm shadow-[0_4px_15px_rgba(74,42,122,0.3)]' 
                     : 'bg-dark-800 text-gray-200 rounded-bl-sm border border-white/5'
                  }`}>
                    {msg.mediaType === 'image' && msg.mediaUrl && (
@@ -392,9 +392,9 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
             className="flex justify-start"
           >
             <div className="bg-dark-800 rounded-2xl rounded-bl-sm p-3 border border-white/5 flex items-center gap-2">
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" />
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+              <span className="w-2 h-2 bg-red-600 rounded-full animate-bounce" />
+              <span className="w-2 h-2 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <span className="w-2 h-2 bg-red-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
             </div>
           </motion.div>
         )}
@@ -448,7 +448,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
                 key={i}
                 type="button"
                 onClick={() => sendMessage(null, reply.text)}
-                className="shrink-0 px-3 py-1.5 bg-purple-900/40 hover:bg-purple-800 border border-purple-500/30 rounded-full text-white text-[10px] font-medium transition-all"
+                className="shrink-0 px-3 py-1.5 bg-red-900/40 hover:bg-red-900 border border-red-600/30 rounded-full text-white text-[10px] font-medium transition-all"
               >
                 {reply.label}
               </button>
@@ -457,7 +457,7 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
         )}
 
         <form onSubmit={sendMessage} className="flex gap-2 items-end">
-          <div className="flex-1 bg-dark-900 rounded-2xl flex items-end px-3 py-2 border border-white/10 focus-within:border-purple-500/50 transition-colors">
+          <div className="flex-1 bg-dark-900 rounded-2xl flex items-end px-3 py-2 border border-white/10 focus-within:border-red-600/50 transition-colors">
             
             <button type="button" className="p-2 text-gray-400 hover:text-gold-500 transition" onClick={() => fileInputRef.current?.click()}>
               <ImageIcon size={20} />

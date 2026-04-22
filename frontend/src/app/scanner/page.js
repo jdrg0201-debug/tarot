@@ -78,7 +78,7 @@ export default function ScannerPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-white overflow-x-hidden overflow-y-auto relative select-none bg-transparent">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-purple-900)_0%,_transparent_60%)] opacity-20 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-red-950)_0%,_transparent_60%)] opacity-20 pointer-events-none"></div>
       
       {/* Particles */}
       {isPressing && !completed && (
@@ -125,7 +125,7 @@ export default function ScannerPage() {
                 )}
                 
                 <motion.div 
-                  className={`absolute inset-0 border-2 rounded-full transition-all duration-500 ${isPressing ? 'border-gold-500 shadow-[0_0_60px_rgba(212,175,55,0.6)]' : 'border-purple-800/30'}`}
+                  className={`absolute inset-0 border-2 rounded-full transition-all duration-500 ${isPressing ? 'border-gold-500 shadow-[0_0_60px_rgba(212,175,55,0.6)]' : 'border-red-900/30'}`}
                   animate={{ scale: isPressing ? 1.15 : 1 }}
                 />
 
@@ -133,7 +133,7 @@ export default function ScannerPage() {
                   <Fingerprint 
                     size={110} 
                     strokeWidth={0.5} 
-                    className={`transition-colors duration-500 ${isPressing ? 'text-gold-500 animate-pulse' : 'text-purple-500 opacity-20'}`} 
+                    className={`transition-colors duration-500 ${isPressing ? 'text-gold-500 animate-pulse' : 'text-red-600 opacity-20'}`} 
                   />
                 </div>
 
@@ -151,7 +151,7 @@ export default function ScannerPage() {
               {/* Progress Bar Container */}
               <div className="w-full mt-40 h-1 bg-white/5 rounded-full overflow-hidden border border-white/5 shadow-inner">
                 <motion.div 
-                  className="h-full bg-gradient-to-r from-purple-800 via-gold-500 to-white shadow-[0_0_15px_rgba(212,175,55,1)]"
+                  className="h-full bg-gradient-to-r from-red-900 via-gold-500 to-white shadow-[0_0_15px_rgba(212,175,55,1)]"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -180,7 +180,7 @@ export default function ScannerPage() {
               >
                 <p className="font-serif text-3xl text-white tracking-widest uppercase">Hay una conexión activa</p>
                 <div className="h-px w-24 bg-gold-500/30 mx-auto" />
-                <p className="font-serif text-2xl text-purple-400 italic font-bold">Y no se ha cerrado el portal</p>
+                <p className="font-serif text-2xl text-red-500 italic font-bold">Y no se ha cerrado el portal</p>
               </motion.div>
 
               <motion.div 

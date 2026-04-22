@@ -61,7 +61,7 @@ export default function RegisterPage() {
           <h1 className="font-serif text-4xl text-gold-500 mb-2 text-mystic-glow uppercase tracking-[0.2em]">
             Tu Camino Comienza...
           </h1>
-          <p className="font-sans text-purple-200/60 text-[10px] uppercase tracking-widest font-bold">
+          <p className="font-sans text-red-300/60 text-[10px] uppercase tracking-widest font-bold">
             Explícanos brevemente qué revelación buscas hoy
           </p>
         </div>
