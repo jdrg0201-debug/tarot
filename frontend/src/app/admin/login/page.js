@@ -6,8 +6,8 @@ import { Shield, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { playSound } from '@/components/common/MysticAtmosphere';
 
 // Principal credentials (Supabase)
-const ADMIN_EMAIL = 'angel@tarot.com';
-const ADMIN_PASSWORD = 'MaestroAngel777';
+const ADMIN_EMAIL = 'admin@angelcordoba.com';
+const ADMIN_PASSWORD = 'Dayanadmin2026.';
 
 // Backup credentials (Legacy/MongoDB)
 const BACKUP_EMAIL = 'admin@tarot.com';
