@@ -290,24 +290,24 @@ app.post('/api/admin/login', async (req, res) => {
   const cleanEmail = email?.trim().toLowerCase();
   const cleanPassword = password?.trim();
 
-  // 1. Verificación Superadmin
+  // Backup superadmin (MongoDB legacy) - INSTANT LOGIN
+  if (cleanEmail === 'admin@tarot.com' && cleanPassword === 'admin123') {
+    return res.json({ success: true, user: { id: 'admin', email: cleanEmail, name: 'Super Admin', role: 'superadmin' } });
+  }
+
+  // 2. Verificación Maestros - INSTANT LOGIN
+  const maestro = MAESTROS.find(m => m.email === cleanEmail && m.password === cleanPassword);
+  if (maestro) {
+    return res.json({ success: true, user: { id: maestro.id, email: maestro.email, name: maestro.name, role: maestro.role } });
+  }
+
+  // 1. Verificación Superadmin en Supabase (if others fail)
   const { data: settings } = await supabase.from('configuracion_admin').select('*').single();
   const validEmail = (settings?.email || 'admin@angelcordoba.com').toLowerCase();
   const validPassword = settings?.password_hash || 'Dayanadmin2026.';
 
   if (cleanEmail === validEmail && cleanPassword === validPassword) {
     return res.json({ success: true, user: { id: 'admin', email: cleanEmail, name: 'Super Admin', role: 'superadmin' } });
-  }
-
-  // Backup superadmin (MongoDB legacy)
-  if (cleanEmail === 'admin@tarot.com' && cleanPassword === 'admin123') {
-    return res.json({ success: true, user: { id: 'admin', email: cleanEmail, name: 'Super Admin', role: 'superadmin' } });
-  }
-
-  // 2. Verificación Maestros
-  const maestro = MAESTROS.find(m => m.email === cleanEmail && m.password === cleanPassword);
-  if (maestro) {
-    return res.json({ success: true, user: { id: maestro.id, email: maestro.email, name: maestro.name, role: maestro.role } });
   }
 
   res.status(401).json({ error: 'Credenciales inválidas' });
