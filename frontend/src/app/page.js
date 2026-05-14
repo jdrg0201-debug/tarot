@@ -17,15 +17,15 @@ export default function Home() {
     e.preventDefault();
     if (!name.trim() || !phone || !reason.trim()) return;
     
-    // Check if fbq exists for tracking Leads
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Lead');
-    }
+    try {
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead');
+      }
+    } catch (e) { console.error('FBQ Error:', e); }
 
     playSound('chime');
     setLoading(true);
 
-    // Generate/retrieve userId and save data locally first
     let userId = localStorage.getItem('userId');
     if (!userId) {
       userId = 'user_' + Math.random().toString(36).substr(2, 9);
@@ -38,19 +38,21 @@ export default function Home() {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
       if (backendUrl) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
         await fetch(`${backendUrl}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, name, phone, reason })
+          body: JSON.stringify({ userId, name, phone, reason }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
       }
     } catch (err) {
-      // Backend error is non-blocking — user still progresses
       console.warn('Backend registration failed (non-blocking):', err);
     } finally {
-      setLoading(false);
-      // Skip the scanner and go directly to chat
-      router.push('/chat');
+      window.location.href = '/chat';
     }
   };
 
