@@ -322,19 +322,23 @@ io.on('connection', (socket) => {
   console.log('Connected:', socket.id);
 
   socket.on('join', async ({ userId, role }) => {
-    socket.join(userId);
-    if (role === 'admin') {
-      socket.join('admins');
-    } else {
-      // Update or create user socket
-      const { data: existing } = await supabase.from('usuarios').select('id').eq('user_id', userId).single();
-      if (existing) {
-        await supabase.from('usuarios').update({ socket_id: socket.id, estado: 'online', actualizado_en: new Date().toISOString() }).eq('user_id', userId);
+    try {
+      socket.join(userId);
+      if (role === 'admin') {
+        socket.join('admins');
       } else {
-        await supabase.from('usuarios').insert({ user_id: userId, socket_id: socket.id, estado: 'online' });
+        const { data: existing, error: findError } = await supabase.from('usuarios').select('id').eq('user_id', userId).single();
+        if (existing) {
+          await supabase.from('usuarios').update({ socket_id: socket.id, estado: 'online', actualizado_en: new Date().toISOString() }).eq('user_id', userId);
+        } else {
+          const { error: insertError } = await supabase.from('usuarios').insert({ user_id: userId, nombre: 'Anónimo', socket_id: socket.id, estado: 'online' });
+          if (insertError) console.error('Error inserting user on join:', insertError);
+        }
+        const { data: user } = await supabase.from('usuarios').select('*').eq('user_id', userId).single();
+        if (user) io.to('admins').emit('user_updated', mapUser(user));
       }
-      const { data: user } = await supabase.from('usuarios').select('*').eq('user_id', userId).single();
-      if (user) io.to('admins').emit('user_updated', mapUser(user));
+    } catch (err) {
+      console.error('Critical error in join socket handler:', err);
     }
   });
 
@@ -344,25 +348,43 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', async ({ senderId, receiverId, text, mediaUrl, mediaType }) => {
-    const { data: msg } = await supabase
-      .from('mensajes')
-      .insert({ emisor_id: senderId, receptor_id: receiverId, texto: text, media_url: mediaUrl, media_tipo: mediaType })
-      .select()
-      .single();
+    try {
+      const { data: msg, error } = await supabase
+        .from('mensajes')
+        .insert({ emisor_id: senderId, receptor_id: receiverId, texto: text, media_url: mediaUrl, media_tipo: mediaType })
+        .select()
+        .single();
 
-    if (senderId !== 'admin') {
-      await supabase.from('usuarios').update({ actualizado_en: new Date().toISOString() }).eq('user_id', senderId);
-    }
+      if (error) {
+        console.error('Supabase Insert Error in send_message:', error);
+      }
 
-    const mapped = mapMessage(msg);
-    const rooms = [senderId];
-    if (receiverId === 'admin') {
-      rooms.push('admins');
-    } else {
-      rooms.push(receiverId);
+      if (senderId !== 'admin') {
+        await supabase.from('usuarios').update({ actualizado_en: new Date().toISOString() }).eq('user_id', senderId);
+      }
+
+      // If msg is null due to error, construct a fallback mapped message so chat continues
+      const mapped = mapMessage(msg) || {
+        _id: 'temp_' + Date.now(),
+        senderId,
+        receiverId,
+        text,
+        mediaUrl,
+        mediaType,
+        createdAt: new Date().toISOString()
+      };
+
+      const rooms = [senderId];
+      if (receiverId === 'admin') {
+        rooms.push('admins');
+      } else {
+        rooms.push(receiverId);
+      }
+      
+      io.to(rooms).emit('receive_message', mapped);
+    } catch (err) {
+      console.error('Critical error in send_message socket handler:', err);
     }
-    
-    io.to(rooms).emit('receive_message', mapped);
   });
 
   socket.on('disconnect', async () => {
