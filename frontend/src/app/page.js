@@ -26,6 +26,7 @@ export default function Home() {
     playSound('chime');
     setLoading(true);
 
+    // Save data locally first
     let userId = localStorage.getItem('userId');
     if (!userId) {
       userId = 'user_' + Math.random().toString(36).substr(2, 9);
@@ -35,25 +36,8 @@ export default function Home() {
     localStorage.setItem('userPhone', phone);
     localStorage.setItem('userReason', reason);
 
-    try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
-      if (backendUrl) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
-        await fetch(`${backendUrl}/api/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, name, phone, reason }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-      }
-    } catch (err) {
-      console.warn('Backend registration failed (non-blocking):', err);
-    } finally {
-      window.location.href = '/chat';
-    }
+    // Skip blocking API call; Socket.io will handle the backend registration
+    window.location.href = '/chat';
   };
 
   return (

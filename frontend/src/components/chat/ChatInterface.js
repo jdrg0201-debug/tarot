@@ -128,7 +128,15 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     socketRef.current = s;
     // Listen for connect event so reconnects (e.g. unlocking phone) rejoin the room
     s.on('connect', () => {
-      s.emit('join', { userId: activeChat || userId, role });
+      let userData = {};
+      if (role === 'user') {
+        userData = {
+          name: localStorage.getItem('userName') || 'Anónimo',
+          phone: localStorage.getItem('userPhone') || '',
+          reason: localStorage.getItem('userReason') || ''
+        };
+      }
+      s.emit('join', { userId: activeChat || userId, role, userData });
     });
     // Fetch previous messages
     const fetchMessages = async () => {

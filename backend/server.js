@@ -326,21 +326,56 @@ app.get('/api/maestros', (req, res) => res.json(MAESTROS.map(m => ({ id: m.id, n
 io.on('connection', (socket) => {
   console.log('Connected:', socket.id);
 
-  socket.on('join', async ({ userId, role }) => {
+  socket.on('join', async ({ userId, role, userData }) => {
     try {
       socket.join(userId);
       if (role === 'admin') {
         socket.join('admins');
       } else {
-        const { data: existing, error: findError } = await supabase.from('usuarios').select('id').eq('user_id', userId).single();
+        const { data: existing, error: findError } = await supabase.from('usuarios').select('id, quiz_data').eq('user_id', userId).single();
+        
+        let userRecord;
         if (existing) {
-          await supabase.from('usuarios').update({ socket_id: socket.id, estado: 'online', actualizado_en: new Date().toISOString() }).eq('user_id', userId);
+          const { data } = await supabase.from('usuarios').update({ 
+            socket_id: socket.id, 
+            estado: 'online', 
+            actualizado_en: new Date().toISOString(),
+            ...(userData?.name ? { nombre: userData.name } : {}),
+            ...(userData?.phone ? { telefono: userData.phone } : {}),
+            ...(userData?.reason ? { razon: userData.reason } : {})
+          }).eq('user_id', userId).select().single();
+          userRecord = data;
         } else {
-          const { error: insertError } = await supabase.from('usuarios').insert({ user_id: userId, nombre: 'Anónimo', socket_id: socket.id, estado: 'online' });
+          let assignedTo = null;
+          if (globalSettings.autoDistribute && MAESTROS.length > 0) {
+            assignedTo = MAESTROS[globalSettings.lastAssignedIndex]?.id;
+            globalSettings.lastAssignedIndex = (globalSettings.lastAssignedIndex + 1) % MAESTROS.length;
+          }
+          const quizData = assignedTo ? { assignedTo } : {};
+          
+          const { data, error: insertError } = await supabase.from('usuarios').insert({ 
+            user_id: userId, 
+            nombre: userData?.name || 'Anónimo', 
+            telefono: userData?.phone || '',
+            razon: userData?.reason || '',
+            socket_id: socket.id, 
+            estado: 'online',
+            quiz_data: quizData
+          }).select().single();
+          
           if (insertError) console.error('Error inserting user on join:', insertError);
+          userRecord = data;
         }
-        const { data: user } = await supabase.from('usuarios').select('*').eq('user_id', userId).single();
-        if (user) io.to('admins').emit('user_updated', mapUser(user));
+
+        if (userRecord) {
+          const mapped = mapUser(userRecord);
+          // Only emit new_lead if it was just created (existing is null)
+          if (!existing) {
+            io.to('admins').emit('new_lead', mapped);
+          } else {
+            io.to('admins').emit('user_updated', mapped);
+          }
+        }
       }
     } catch (err) {
       console.error('Critical error in join socket handler:', err);
