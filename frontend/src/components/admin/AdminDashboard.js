@@ -74,11 +74,13 @@ export default function AdminDashboard() {
 
     fetch(`${SOCKET_URL}/api/users?maestroId=${currentUser.id}`)
       .then(res => res.json())
-      .then(data => setUsers(data));
+      .then(data => setUsers(Array.isArray(data) ? data : []))
+      .catch(() => setUsers([]));
 
     fetch(`${SOCKET_URL}/api/quick-replies`)
       .then(res => res.json())
-      .then(data => setQuickReplies(data));
+      .then(data => setQuickReplies(Array.isArray(data) ? data : []))
+      .catch(() => setQuickReplies([]));
 
     if (currentUser.role === 'superadmin') {
       fetch(`${SOCKET_URL}/api/admin/distribution`)

@@ -354,22 +354,8 @@ io.on('connection', (socket) => {
 
   socket.on('send_message', async ({ senderId, receiverId, text, mediaUrl, mediaType }) => {
     try {
-      const { data: msg, error } = await supabase
-        .from('mensajes')
-        .insert({ emisor_id: senderId, receptor_id: receiverId, texto: text, media_url: mediaUrl, media_tipo: mediaType })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Supabase Insert Error in send_message:', error);
-      }
-
-      if (senderId !== 'admin') {
-        await supabase.from('usuarios').update({ actualizado_en: new Date().toISOString() }).eq('user_id', senderId);
-      }
-
-      // If msg is null due to error, construct a fallback mapped message so chat continues
-      const mapped = mapMessage(msg) || {
+      // 1. Emit real-time message immediately for instant UI feedback
+      const instantMsg = {
         _id: 'temp_' + Date.now(),
         senderId,
         receiverId,
@@ -380,13 +366,28 @@ io.on('connection', (socket) => {
       };
 
       const rooms = [senderId];
-      if (receiverId === 'admin') {
-        rooms.push('admins');
-      } else {
-        rooms.push(receiverId);
-      }
+      if (receiverId === 'admin') rooms.push('admins');
+      else rooms.push(receiverId);
       
-      io.to(rooms).emit('receive_message', mapped);
+      io.to(rooms).emit('receive_message', instantMsg);
+
+      // 2. Background DB Insert (non-blocking)
+      (async () => {
+        try {
+          const { error } = await supabase
+            .from('mensajes')
+            .insert({ emisor_id: senderId, receptor_id: receiverId, texto: text, media_url: mediaUrl, media_tipo: mediaType });
+            
+          if (error) console.error('Supabase Insert Error:', error);
+          
+          if (senderId !== 'admin') {
+            await supabase.from('usuarios').update({ actualizado_en: new Date().toISOString() }).eq('user_id', senderId);
+          }
+        } catch (dbErr) {
+          console.error('Background DB Error:', dbErr);
+        }
+      })();
+      
     } catch (err) {
       console.error('Critical error in send_message socket handler:', err);
     }
