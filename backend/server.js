@@ -65,11 +65,10 @@ app.get('/api/users', async (req, res) => {
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
-    .eq('archivado', false)
     .order('actualizado_en', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   
-  let mappedData = data.map(mapUser);
+  let mappedData = data.filter(u => u.archivado !== true).map(mapUser);
   if (maestroId && maestroId !== 'admin') {
     mappedData = mappedData.filter(u => u.quizData && u.quizData.assignedTo === maestroId);
   }

@@ -37,7 +37,8 @@ export default function Home() {
     localStorage.setItem('userReason', reason);
 
     // Skip blocking API call; Socket.io will handle the backend registration
-    window.location.href = '/chat';
+    setLoading(false);
+    router.push('/chat');
   };
 
   return (

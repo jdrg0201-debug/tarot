@@ -109,6 +109,14 @@ export default function AdminDashboard() {
       const audio = new Audio('/sounds/notification.mp3');
       audio.play().catch(()=>{});
       setNotifications(prev => [...prev, { id: Date.now(), text: `🌟 NUEVO LEAD: ${user.name}` }]);
+      
+      // Add user to the list if we are superadmin, or if it's assigned to us
+      if (currentUser.role === 'superadmin' || (user.quizData && user.quizData.assignedTo === currentUser.id)) {
+        setUsers(prev => {
+          if (prev.find(u => u.userId === user.userId)) return prev;
+          return [user, ...prev].sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+        });
+      }
     });
 
     s.on('receive_message', (msg) => {
