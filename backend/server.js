@@ -14,6 +14,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// ─── MAESTROS & SYSTEM STATE ──────────────────────────────────────────────────
+const MAESTROS = [
+  { id: 'carmen', name: 'MAESTRA CARMEN', email: 'carmen@tarot.com', password: 'carmenpassword', role: 'maestro' },
+  { id: 'samuel', name: 'MAESTRO SAMUEL', email: 'samuel@tarot.com', password: 'samuelpassword', role: 'maestro' },
+  { id: 'fatima', name: 'MAESTRA FÁTIMA', email: 'fatima@tarot.com', password: 'fatimapassword', role: 'maestro' },
+  { id: 'jeremias', name: 'MAESTRO JEREMIAS', email: 'jeremias@tarot.com', password: 'jeremiaspassword', role: 'maestro' },
+  { id: 'ricardo', name: 'MAESTRO RICARDO', email: 'ricardo@tarot.com', password: 'ricardopassword', role: 'maestro' },
+  { id: 'regina', name: 'MAESTRA REGINA', email: 'regina@tarot.com', password: 'reginapassword', role: 'maestro' },
+  { id: 'miguel', name: 'MAESTRO MIGUEL', email: 'miguel@tarot.com', password: 'miguelpassword', role: 'maestro' },
+  { id: 'angel', name: 'MAESTRO ANGEL', email: 'angelm@tarot.com', password: 'angelpassword', role: 'maestro' },
+];
+
+let globalSettings = {
+  autoDistribute: true,
+  lastAssignedIndex: 0
+};
+
 // ─── Express + Socket.io ─────────────────────────────────────────────────────
 const app = express();
 const server = http.createServer(app);
@@ -44,14 +61,20 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
 app.get('/api/users', async (req, res) => {
+  const { maestroId } = req.query;
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
     .eq('archivado', false)
     .order('actualizado_en', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
-  // Map to legacy field names for frontend compatibility
-  res.json(data.map(mapUser));
+  
+  let mappedData = data.map(mapUser);
+  if (maestroId && maestroId !== 'admin') {
+    mappedData = mappedData.filter(u => u.quizData && u.quizData.assignedTo === maestroId);
+  }
+  
+  res.json(mappedData);
 });
 
 app.post('/api/register', async (req, res) => {
@@ -59,9 +82,15 @@ app.post('/api/register', async (req, res) => {
 
   const { data: existing } = await supabase
     .from('usuarios')
-    .select('id')
+    .select('id, quiz_data')
     .eq('user_id', userId)
     .single();
+
+  let assignedTo = null;
+  if (!existing && globalSettings.autoDistribute) {
+    assignedTo = MAESTROS[globalSettings.lastAssignedIndex].id;
+    globalSettings.lastAssignedIndex = (globalSettings.lastAssignedIndex + 1) % MAESTROS.length;
+  }
 
   let user;
   if (existing) {
@@ -73,9 +102,10 @@ app.post('/api/register', async (req, res) => {
       .single();
     user = data;
   } else {
+    const quizData = assignedTo ? { assignedTo } : {};
     const { data } = await supabase
       .from('usuarios')
-      .insert({ user_id: userId, nombre: name, telefono: phone, razon: reason, estado: 'online' })
+      .insert({ user_id: userId, nombre: name, telefono: phone, razon: reason, estado: 'online', quiz_data: quizData })
       .select()
       .single();
     user = data;
@@ -130,6 +160,26 @@ app.put('/api/users/:userId/archive', async (req, res) => {
   const { data } = await supabase
     .from('usuarios')
     .update({ archivado: isArchived, actualizado_en: new Date().toISOString() })
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  const mapped = mapUser(data);
+  io.to('admins').emit('user_updated', mapped);
+  res.json(mapped);
+});
+
+app.put('/api/users/:userId/assign', async (req, res) => {
+  const { userId } = req.params;
+  const { maestroId } = req.body;
+
+  const { data: curr } = await supabase.from('usuarios').select('quiz_data').eq('user_id', userId).single();
+  const quizData = curr?.quiz_data || {};
+  quizData.assignedTo = maestroId;
+
+  const { data } = await supabase
+    .from('usuarios')
+    .update({ quiz_data: quizData, actualizado_en: new Date().toISOString() })
     .eq('user_id', userId)
     .select()
     .single();
@@ -241,16 +291,31 @@ app.post('/api/admin/login', async (req, res) => {
   const cleanEmail = email?.trim().toLowerCase();
   const cleanPassword = password?.trim();
 
+  // 1. Verificación Superadmin
   const { data: settings } = await supabase.from('configuracion_admin').select('*').single();
-  const validEmail = (settings?.email || 'angel@tarot.com').toLowerCase();
-  const validPassword = settings?.password_hash || 'MaestroAngel777';
+  const validEmail = (settings?.email || 'admin@angelcordoba.com').toLowerCase();
+  const validPassword = settings?.password_hash || 'Dayanadmin2026.';
 
   if (cleanEmail === validEmail && cleanPassword === validPassword) {
-    res.json({ success: true, user: { email: cleanEmail, role: 'admin' } });
-  } else {
-    res.status(401).json({ error: 'Credenciales inválidas' });
+    return res.json({ success: true, user: { id: 'admin', email: cleanEmail, name: 'Super Admin', role: 'superadmin' } });
   }
+
+  // 2. Verificación Maestros
+  const maestro = MAESTROS.find(m => m.email === cleanEmail && m.password === cleanPassword);
+  if (maestro) {
+    return res.json({ success: true, user: { id: maestro.id, email: maestro.email, name: maestro.name, role: maestro.role } });
+  }
+
+  res.status(401).json({ error: 'Credenciales inválidas' });
 });
+
+// Configuración de Distribución
+app.get('/api/admin/distribution', (req, res) => res.json(globalSettings));
+app.put('/api/admin/distribution', (req, res) => {
+  globalSettings.autoDistribute = req.body.autoDistribute;
+  res.json(globalSettings);
+});
+app.get('/api/maestros', (req, res) => res.json(MAESTROS.map(m => ({ id: m.id, name: m.name }))));
 
 // ─── SOCKET.IO ───────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {

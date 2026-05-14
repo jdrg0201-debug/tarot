@@ -5,14 +5,6 @@ import { motion } from 'framer-motion';
 import { Shield, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { playSound } from '@/components/common/MysticAtmosphere';
 
-// Principal credentials (Supabase)
-const ADMIN_EMAIL = 'admin@angelcordoba.com';
-const ADMIN_PASSWORD = 'Dayanadmin2026.';
-
-// Backup credentials (Legacy/MongoDB)
-const BACKUP_EMAIL = 'admin@tarot.com';
-const BACKUP_PASSWORD = 'admin123';
-
 export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -21,30 +13,39 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     playSound('click-magic');
 
-    // Small delay for UX effect
-    setTimeout(() => {
-      const cleanEmail = email.trim().toLowerCase();
-      const cleanPassword = password.trim();
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
+      const res = await fetch(`${backendUrl}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-      const isPrimaryMatch = cleanEmail === ADMIN_EMAIL && cleanPassword === ADMIN_PASSWORD;
-      const isBackupMatch = cleanEmail === BACKUP_EMAIL && cleanPassword === BACKUP_PASSWORD;
+      const data = await res.json();
 
-      if (isPrimaryMatch || isBackupMatch) {
+      if (data.success) {
         playSound('sparkle');
         localStorage.setItem('admin_token', 'mistic_token_123');
+        // Save the user data so the dashboard knows if it's superadmin or maestro
+        localStorage.setItem('admin_user', JSON.stringify(data.user));
         router.push('/admin');
       } else {
-        setError('Acceso denegado. Las credenciales no coinciden.');
+        setError(data.error || 'Credenciales inválidas');
         playSound('whoosh');
       }
+    } catch (err) {
+      console.error(err);
+      setError('Error de conexión con el templo');
+      playSound('whoosh');
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (

@@ -46,18 +46,33 @@ export default function AdminDashboard() {
     perdido: { label: 'Perdido', color: 'bg-gray-500', icon: XCircle },
   };
 
+  const [globalDistribute, setGlobalDistribute] = useState(true);
+  const [maestrosList, setMaestrosList] = useState([]);
+
   useEffect(() => {
     // Check auth
-    if (!localStorage.getItem('admin_token')) {
+    const token = localStorage.getItem('admin_token');
+    const userStr = localStorage.getItem('admin_user');
+    if (!token || !userStr) {
       router.push('/admin/login');
       return;
     }
 
+    const currentUser = JSON.parse(userStr);
+    
+    setAdminProfile({
+      name: currentUser.name,
+      avatar: currentUser.avatar || '',
+      email: currentUser.email,
+      role: currentUser.role,
+      id: currentUser.id
+    });
+
     const s = io(SOCKET_URL);
     setSocket(s);
-    s.emit('join', { userId: 'admin', role: 'admin' });
+    s.emit('join', { userId: currentUser.id, role: 'admin' });
 
-    fetch(`${SOCKET_URL}/api/users`)
+    fetch(`${SOCKET_URL}/api/users?maestroId=${currentUser.id}`)
       .then(res => res.json())
       .then(data => setUsers(data));
 
@@ -65,16 +80,15 @@ export default function AdminDashboard() {
       .then(res => res.json())
       .then(data => setQuickReplies(data));
 
-    fetch(`${SOCKET_URL}/api/admin/settings`)
-      .then(res => res.json())
-      .then(data => {
-        setAdminRowId(data._id);
-        setAdminProfile({
-          name: data.name || 'El Maestro',
-          avatar: data.avatar || '',
-          email: data.email || ''
-        });
-      });
+    if (currentUser.role === 'superadmin') {
+      fetch(`${SOCKET_URL}/api/admin/distribution`)
+        .then(res => res.json())
+        .then(data => setGlobalDistribute(data.autoDistribute));
+        
+      fetch(`${SOCKET_URL}/api/maestros`)
+        .then(res => res.json())
+        .then(data => setMaestrosList(data));
+    }
 
 
     s.on('user_updated', (user) => {
@@ -110,20 +124,11 @@ export default function AdminDashboard() {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setIsEditing(true);
-    try {
-      const res = await fetch(`${SOCKET_URL}/api/admin/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(adminProfile)
-      });
-      const data = await res.json();
-      setAdminProfile({
-        name: data.name || 'El Maestro',
-        avatar: data.avatar || '',
-        email: data.email || ''
-      });
-      setShowProfileModal(false);
-    } catch(e) { console.error(e); } finally { setIsEditing(false); }
+    // Profile editing is limited for now, mostly handled via Superadmin directly in code/db
+    setTimeout(() => {
+       setIsEditing(false);
+       setShowProfileModal(false);
+    }, 1000);
   };
 
   const handleAvatarUpload = async (e) => {
@@ -205,6 +210,31 @@ export default function AdminDashboard() {
       });
       const updatedUser = await res.json();
       setUsers(prev => prev.map(u => u.userId === userId ? updatedUser : u));
+    } catch(e) {}
+  };
+
+  const handleReassign = async (userId, maestroId) => {
+    if (!maestroId) return;
+    try {
+      const res = await fetch(`${SOCKET_URL}/api/users/${userId}/assign`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ maestroId })
+      });
+      const updatedUser = await res.json();
+      setUsers(prev => prev.map(u => u.userId === userId ? updatedUser : u));
+    } catch(e) {}
+  };
+
+  const toggleDistribution = async () => {
+    const newValue = !globalDistribute;
+    setGlobalDistribute(newValue);
+    try {
+      await fetch(`${SOCKET_URL}/api/admin/distribution`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autoDistribute: newValue })
+      });
     } catch(e) {}
   };
 
@@ -303,6 +333,18 @@ export default function AdminDashboard() {
              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
              <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar almas..." className="w-full bg-dark-950 border border-white/10 rounded-lg py-2 pl-9 pr-4 text-xs text-white outline-none focus:border-gold-500/50" />
           </div>
+
+          {adminProfile.role === 'superadmin' && (
+            <div className="mt-4 p-3 bg-dark-950 border border-white/5 rounded-lg flex justify-between items-center">
+              <span className="text-[10px] text-gray-400 font-bold uppercase">Distribución Auto</span>
+              <button 
+                onClick={toggleDistribution}
+                className={`w-10 h-5 rounded-full relative transition-colors ${globalDistribute ? 'bg-green-500' : 'bg-gray-600'}`}
+              >
+                <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-transform ${globalDistribute ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+          )}
         </div>
         
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -407,6 +449,21 @@ export default function AdminDashboard() {
                        ))}
                     </div>
                   </div>
+                  {adminProfile.role === 'superadmin' && (
+                    <div className="pt-4 border-t border-white/5">
+                      <span className="text-[10px] text-gray-600 font-bold uppercase block mb-3">Asignar a Maestro</span>
+                      <select 
+                        value={activeUserData?.quizData?.assignedTo || ''}
+                        onChange={(e) => handleReassign(activeChat, e.target.value)}
+                        className="w-full bg-dark-950 border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-gold-500 shadow-inner appearance-none cursor-pointer"
+                      >
+                        <option value="">-- Seleccionar Maestro --</option>
+                        {maestrosList.map(m => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   {activeUserData?.phone && (
                     <div className="bg-dark-950 p-4 rounded-xl border border-white/5 flex flex-col gap-2">
                       <div className="flex justify-between items-center text-[9px] text-gray-600 font-bold uppercase"><span><Phone size={10} className="inline mr-1" /> WhatsApp</span><button onClick={() => handleWhatsApp(activeUserData.userId, activeUserData.phone, activeUserData.name)} className="text-green-500 hover:text-green-400 transition-colors">CONTACTAR</button></div>
