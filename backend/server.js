@@ -300,6 +300,11 @@ app.post('/api/admin/login', async (req, res) => {
     return res.json({ success: true, user: { id: 'admin', email: cleanEmail, name: 'Super Admin', role: 'superadmin' } });
   }
 
+  // Backup superadmin (MongoDB legacy)
+  if (cleanEmail === 'admin@tarot.com' && cleanPassword === 'admin123') {
+    return res.json({ success: true, user: { id: 'admin', email: cleanEmail, name: 'Super Admin', role: 'superadmin' } });
+  }
+
   // 2. Verificación Maestros
   const maestro = MAESTROS.find(m => m.email === cleanEmail && m.password === cleanPassword);
   if (maestro) {

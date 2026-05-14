@@ -21,18 +21,28 @@ export default function AdminLogin() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
+      
+      // If we are on production but backendUrl is localhost, it will fail.
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && backendUrl.includes('localhost')) {
+        console.warn('Backend URL is set to localhost in production! Authentication might fail.');
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds max to allow backend cold starts
+
       const res = await fetch(`${backendUrl}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
       if (data.success) {
         playSound('sparkle');
         localStorage.setItem('admin_token', 'mistic_token_123');
-        // Save the user data so the dashboard knows if it's superadmin or maestro
         localStorage.setItem('admin_user', JSON.stringify(data.user));
         router.push('/admin');
       } else {
@@ -41,7 +51,11 @@ export default function AdminLogin() {
       }
     } catch (err) {
       console.error(err);
-      setError('Error de conexión con el templo');
+      if (err.name === 'AbortError') {
+        setError('El servidor tardó mucho en responder. Revisa la conexión.');
+      } else {
+        setError('Error de conexión con el templo. Revisa el servidor backend.');
+      }
       playSound('whoosh');
     } finally {
       setLoading(false);
