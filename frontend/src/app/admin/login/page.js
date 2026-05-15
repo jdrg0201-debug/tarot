@@ -63,24 +63,24 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-cosmic flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-cosmic flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       {/* Background pulses */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-900/10 rounded-full blur-[150px] animate-pulse" />
       
       <motion.div 
         initial={{ opacity: 0, y: 30, filter: 'blur(20px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        className="relative z-10 w-full max-w-md glass-mystic p-10 rounded-[2.5rem] border border-gold-500/20 shadow-[0_30px_100px_rgba(0,0,0,0.5)]"
+        className="relative z-10 w-full max-w-md glass-mystic p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-gold-500/20 shadow-[0_30px_100px_rgba(0,0,0,0.5)]"
       >
-        <div className="text-center mb-10">
-           <div className="w-20 h-20 bg-dark-900 border-2 border-gold-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
-              <Shield className="text-gold-500" size={36} />
+        <div className="text-center mb-8 sm:mb-10">
+           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-dark-900 border-2 border-gold-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+              <Shield className="text-gold-500" size={28} />
            </div>
-           <h1 className="text-3xl font-serif text-gold-500 tracking-[0.2em] uppercase text-mystic-glow">PANEL ADMINISTRATIVO</h1>
-           <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-3 font-bold">Inicia el ritual administrativo</p>
+           <h1 className="text-xl sm:text-3xl font-serif text-gold-500 tracking-[0.1em] sm:tracking-[0.2em] uppercase text-mystic-glow">PANEL ADMINISTRATIVO</h1>
+           <p className="text-[8px] sm:text-[10px] text-gray-500 uppercase tracking-[0.2em] sm:tracking-[0.4em] mt-3 font-bold opacity-80">Inicia el ritual administrativo</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
            <div className="space-y-2">
               <label className="text-[10px] text-gray-400 font-bold uppercase tracking-widest ml-1">E-mail Sagrado</label>
               <div className="relative">
@@ -91,7 +91,7 @@ export default function AdminLogin() {
                    value={email}
                    onChange={e => setEmail(e.target.value)}
                    placeholder="maestro@cosmos.com"
-                   className="w-full bg-dark-950 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:border-gold-500/50 outline-none transition-all placeholder:text-gray-700 font-serif"
+                   className="w-full bg-dark-950/50 border border-white/10 rounded-xl sm:rounded-2xl py-3.5 sm:py-4 pl-12 pr-4 text-white focus:border-gold-500/50 outline-none transition-all placeholder:text-gray-700 font-serif text-sm sm:text-base"
                  />
               </div>
            </div>
@@ -106,7 +106,7 @@ export default function AdminLogin() {
                    value={password}
                    onChange={e => setPassword(e.target.value)}
                    placeholder="********"
-                   className="w-full bg-dark-950 border border-white/10 rounded-2xl py-4 pl-12 pr-12 text-white focus:border-gold-500/50 outline-none transition-all placeholder:text-gray-700 font-serif"
+                   className="w-full bg-dark-950/50 border border-white/10 rounded-xl sm:rounded-2xl py-3.5 sm:py-4 pl-12 pr-12 text-white focus:border-gold-500/50 outline-none transition-all placeholder:text-gray-700 font-serif text-sm sm:text-base"
                  />
                  <button 
                    type="button" 
@@ -127,7 +127,7 @@ export default function AdminLogin() {
            <button 
              type="submit" 
              disabled={loading}
-             className="w-full py-5 bg-gradient-to-r from-gold-600 to-yellow-400 text-black font-bold uppercase tracking-[0.3em] rounded-2xl shadow-[0_10px_40px_rgba(212,175,55,0.2)] hover:shadow-[0_15px_60px_rgba(212,175,55,0.4)] hover:scale-[1.02] transition-all disabled:opacity-50 mt-4"
+             className="w-full py-4 sm:py-5 bg-gradient-to-r from-gold-600 via-yellow-400 to-gold-600 text-dark-900 font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] rounded-xl sm:rounded-2xl shadow-[0_10px_40px_rgba(212,175,55,0.2)] hover:shadow-[0_15px_60px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 mt-4 text-xs sm:text-sm"
            >
               {loading ? 'Validando Energía...' : 'Entrar al Templo'}
            </button>
