@@ -1,12 +1,14 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import ChatInterface from '@/components/chat/ChatInterface';
+import { io } from 'socket.io-client';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5555';
 
 export default function ChatPage() {
   const [userId, setUserId] = useState('');
   const [adminSettings, setAdminSettings] = useState({ name: 'Maestro', avatar: '' });
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     // Basic user tracking
@@ -17,7 +19,17 @@ export default function ChatPage() {
     }
     setUserId(storedId);
 
-    // Load assigned maestro from backend
+    // Initialize socket
+    const s = io(SOCKET_URL);
+    setSocket(s);
+
+    s.on('maestro_assigned', (data) => {
+      if (data && data.name) {
+        setAdminSettings(prev => ({ ...prev, name: data.name }));
+      }
+    });
+
+    // Load assigned maestro from backend (initial load)
     const loadAssignedMaestro = async () => {
       try {
         const [userRes, maestrosRes] = await Promise.all([
@@ -40,6 +52,8 @@ export default function ChatPage() {
       }
     };
     loadAssignedMaestro();
+
+    return () => s.disconnect();
   }, []);
 
   if (!userId) return null;
@@ -58,7 +72,7 @@ export default function ChatPage() {
           paddingBottom: 'env(safe-area-inset-bottom)'
         }}
       >
-        <ChatInterface userId={userId} role="user" receiverId="admin" adminSettings={adminSettings} />
+        <ChatInterface userId={userId} role="user" receiverId="admin" adminSettings={adminSettings} socket={socket} />
       </div>
     </div>
   );

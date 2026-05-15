@@ -392,6 +392,16 @@ io.on('connection', (socket) => {
           // Only emit new_lead if it was just created (existing is null)
           if (!existing) {
             io.to('admins').emit('new_lead', mapped);
+            
+            // Notify the user about their assigned maestro
+            const assignedTo = mapped.quizData?.assignedTo;
+            if (assignedTo) {
+              const maestro = MAESTROS.find(m => m.id === assignedTo);
+              if (maestro) {
+                const shortName = maestro.name.replace('MAESTRA', 'M.').replace('MAESTRO', 'M.');
+                socket.emit('maestro_assigned', { name: shortName });
+              }
+            }
           } else {
             io.to('admins').emit('user_updated', mapped);
           }

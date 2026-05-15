@@ -105,7 +105,7 @@ const CustomAudioMessage = ({ src }) => {
 };
 
 
-export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, chatName = null, quickReplies = [], onManageQuickReplies, adminSettings = {}, onBack, onShowMobileInfo }) {
+export default function ChatInterface({ userId, role = 'user', receiverId = 'admin', activeChat = null, chatName = null, quickReplies = [], onManageQuickReplies, adminSettings = {}, onBack, onShowMobileInfo, socket: socketProp }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -124,10 +124,10 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
 
   // Socket connect and fetch initial
   useEffect(() => {
-    const s = io(SOCKET_URL);
+    const s = socketProp || io(SOCKET_URL);
     socketRef.current = s;
     // Listen for connect event so reconnects (e.g. unlocking phone) rejoin the room
-    s.on('connect', () => {
+    const onConnect = () => {
       let userData = {};
       if (role === 'user') {
         userData = {
@@ -137,7 +137,11 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
         };
       }
       s.emit('join', { userId: activeChat || userId, role, userData });
-    });
+    };
+
+    s.on('connect', onConnect);
+    if (s.connected) onConnect();
+
     // Fetch previous messages
     const fetchMessages = async () => {
       try {
@@ -194,7 +198,11 @@ export default function ChatInterface({ userId, role = 'user', receiverId = 'adm
     s.on('admin_typing', ({ isTyping }) => setTheirTyping(isTyping));
 
     return () => {
-      s.disconnect();
+      s.off('connect', onConnect);
+      s.off('receive_message');
+      s.off('user_typing');
+      s.off('admin_typing');
+      if (!socketProp) s.disconnect();
     };
   }, [userId, role, activeChat]);
 
