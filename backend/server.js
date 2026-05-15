@@ -328,7 +328,8 @@ io.on('connection', (socket) => {
   socket.on('join', async ({ userId, role, userData }) => {
     try {
       socket.join(userId);
-      if (role === 'admin') {
+      // Both regular admins (maestros) and superadmins should join the admins room
+      if (role === 'admin' || role === 'superadmin') {
         socket.join('admins');
       } else {
         const { data: existing, error: findError } = await supabase.from('usuarios').select('id, quiz_data').eq('user_id', userId).single();
