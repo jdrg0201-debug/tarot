@@ -67,31 +67,32 @@ export default function AdminDashboard() {
   const [maestrosList, setMaestrosList] = useState([]);
 
   useEffect(() => {
-    // Check auth
-    const token = localStorage.getItem('admin_token');
-    const userStr = localStorage.getItem('admin_user');
-    if (!token || !userStr) {
-      router.push('/admin/login');
-      return;
-    }
-
-    let currentUser;
+    let currentUser = null;
     try {
+      const token = localStorage.getItem('admin_token');
+      const userStr = localStorage.getItem('admin_user');
+      
+      if (!token || !userStr) {
+        router.push('/admin/login');
+        return;
+      }
       currentUser = JSON.parse(userStr);
+      if (!currentUser) throw new Error('No user');
+
+      setAdminProfile({
+        name: currentUser.name || 'Admin',
+        avatar: currentUser.avatar || '',
+        email: currentUser.email || '',
+        role: currentUser.role || 'maestro',
+        id: currentUser.id
+      });
     } catch (e) {
+      console.error('Auth error:', e);
       localStorage.removeItem('admin_user');
       localStorage.removeItem('admin_token');
       router.push('/admin/login');
       return;
     }
-    
-    setAdminProfile({
-      name: currentUser.name,
-      avatar: currentUser.avatar || '',
-      email: currentUser.email,
-      role: currentUser.role,
-      id: currentUser.id
-    });
 
     const s = io(SOCKET_URL);
     setSocket(s);
@@ -348,6 +349,17 @@ export default function AdminDashboard() {
 
   // --- STATISTICS CALCULATIONS ---
   const totalLeads = users.length;
+  const safeFormatDistance = (dateStr) => {
+    try {
+      if (!dateStr) return 'ahora';
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'reciente';
+      return formatDistanceToNow(date, { locale: es, addSuffix: false });
+    } catch (e) {
+      return 'reciente';
+    }
+  };
+
   const statusCounts = {
     nuevo: users.filter(u => !u.crmStatus || u.crmStatus.toLowerCase() === 'nuevo').length,
     conversacion: users.filter(u => u.crmStatus?.toLowerCase() === 'conversacion').length,
@@ -355,7 +367,7 @@ export default function AdminDashboard() {
     cerrado: users.filter(u => u.crmStatus?.toLowerCase() === 'cerrado').length,
     perdido: users.filter(u => u.crmStatus?.toLowerCase() === 'perdido').length,
   };
-  const interactedCount = statusCounts.conversacion + statusCounts.caliente + statusCounts.cerrado;
+  const interactedCount = users.filter(u => u.crmStatus && u.crmStatus.toLowerCase() !== 'nuevo').length;
   const unrespondedCount = statusCounts.nuevo;
   const whatsappContacted = users.filter(u => u.tags && u.tags.includes('whatsapp_contactado')).length;
 
@@ -416,7 +428,7 @@ export default function AdminDashboard() {
              <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar almas..." className="w-full bg-dark-950 border border-white/10 rounded-lg py-2 pl-9 pr-4 text-xs text-white outline-none focus:border-gold-500/50" />
           </div>
 
-          {adminProfile.role === 'superadmin' && (
+          {adminProfile?.role === 'superadmin' && (
             <div className="mt-4 p-3 bg-dark-950 border border-white/5 rounded-lg flex justify-between items-center">
               <span className="text-[10px] text-gray-400 font-bold uppercase">Distribución Auto</span>
               <button 
@@ -437,11 +449,11 @@ export default function AdminDashboard() {
                     <div className={`w-2 h-2 rounded-full ${u.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-gray-600'}`} />
                     <span className="text-white font-medium truncate max-w-[120px]">{u.name || 'Anónimo'}</span>
                  </div>
-                 <span className="text-[10px] text-gray-500">{formatDistanceToNow(new Date(u.updatedAt || u.createdAt || Date.now()), { locale: es, addSuffix: false })}</span>
+                 <span className="text-[10px] text-gray-500">{safeFormatDistance(u.updatedAt || u.createdAt)}</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
                  <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold text-white ${(CRM_STATUSES[(u.crmStatus || 'nuevo').toLowerCase()] || CRM_STATUSES.nuevo).color}`}>{(CRM_STATUSES[(u.crmStatus || 'nuevo').toLowerCase()] || CRM_STATUSES.nuevo).label}</span>
-                 {adminProfile.role === 'superadmin' && u.quizData?.assignedTo && (
+                 {adminProfile?.role === 'superadmin' && u.quizData?.assignedTo && (
                    <span className="ml-auto text-[7px] text-gold-500 font-mono tracking-widest uppercase border border-gold-500/30 bg-gold-500/5 px-1.5 py-0.5 rounded shadow-[0_0_5px_rgba(212,175,55,0.1)]">
                      {maestrosList.find(m => m.id === u.quizData.assignedTo)?.name?.replace('MAESTR', 'M.') || u.quizData.assignedTo}
                    </span>
