@@ -58,7 +58,15 @@ export default function AdminDashboard() {
       return;
     }
 
-    const currentUser = JSON.parse(userStr);
+    let currentUser;
+    try {
+      currentUser = JSON.parse(userStr);
+    } catch (e) {
+      localStorage.removeItem('admin_user');
+      localStorage.removeItem('admin_token');
+      router.push('/admin/login');
+      return;
+    }
     
     setAdminProfile({
       name: currentUser.name,
@@ -385,7 +393,7 @@ export default function AdminDashboard() {
                     <div className={`w-2 h-2 rounded-full ${u.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-gray-600'}`} />
                     <span className="text-white font-medium truncate max-w-[120px]">{u.name || 'Anónimo'}</span>
                  </div>
-                 <span className="text-[10px] text-gray-500">{formatDistanceToNow(new Date(u.updatedAt || u.createdAt), { locale: es, addSuffix: false })}</span>
+                 <span className="text-[10px] text-gray-500">{formatDistanceToNow(new Date(u.updatedAt || u.createdAt || Date.now()), { locale: es, addSuffix: false })}</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
                  <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold text-white ${CRM_STATUSES[u.crmStatus || 'nuevo'].color}`}>{CRM_STATUSES[u.crmStatus || 'nuevo'].label}</span>
