@@ -1,9 +1,20 @@
+require('dotenv').config({ path: './.env' });
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '/Users/pc/Crear\ T/backend/.env' });
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 async function test() {
-  const { data, error } = await supabase.from('usuarios').select('etiquetas, quiz_data').limit(1);
-  console.log(error || data);
+  console.log("Testing connection to:", process.env.SUPABASE_URL);
+  const { data: readData, error: readError } = await supabase.from('usuarios').select('*').limit(1);
+  console.log("Read Test:", readError ? readError : "Success", readData);
+  const { data, error } = await supabase.from('usuarios').insert({
+    user_id: 'test_user_' + Date.now(),
+    nombre: 'Test User',
+    estado: 'online'
+  }).select();
+  console.log("Insert Test:", error ? error : "Success", data);
 }
 test();
