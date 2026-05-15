@@ -128,32 +128,34 @@ export default function AdminDashboard() {
     });
 
     s.on('receive_message', (msg) => {
-      if (msg.senderId !== 'admin') {
-        setUsers(prev => {
-          const userExists = prev.some(u => u.userId === msg.senderId);
-          if (currentUser.role === 'superadmin' || userExists) {
+      const targetUserId = msg.senderId === 'admin' ? msg.receiverId : msg.senderId;
+      
+      setUsers(prev => {
+        const userExists = prev.some(u => u.userId === targetUserId);
+        if (currentUser.role === 'superadmin' || userExists) {
+          if (msg.senderId !== 'admin') {
             const audio = new Audio('/sounds/notification.mp3');
             audio.play().catch(()=>{});
             setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${msg.senderId}` }]);
-            
-            if (!userExists) {
-              fetch(`${SOCKET_URL}/api/users/${msg.senderId}`)
-                .then(res => res.json())
-                .then(u => {
-                  if (u && u.userId) {
-                    setUsers(curr => {
-                      if (curr.some(x => x.userId === u.userId)) return curr;
-                      return [u, ...curr].sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
-                    });
-                  }
-                }).catch(()=>{});
-              return prev;
-            }
-            return prev.map(u => u.userId === msg.senderId ? { ...u, updatedAt: Date.now() } : u).sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
           }
-          return prev;
-        });
-      }
+          
+          if (!userExists) {
+            fetch(`${SOCKET_URL}/api/users/${targetUserId}`)
+              .then(res => res.json())
+              .then(u => {
+                if (u && u.userId) {
+                  setUsers(curr => {
+                    if (curr.some(x => x.userId === u.userId)) return curr;
+                    return [u, ...curr].sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+                  });
+                }
+              }).catch(()=>{});
+            return prev;
+          }
+          return prev.map(u => u.userId === targetUserId ? { ...u, updatedAt: Date.now() } : u).sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+        }
+        return prev;
+      });
     });
 
     return () => s.disconnect();

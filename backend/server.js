@@ -408,7 +408,10 @@ io.on('connection', (socket) => {
 
       const rooms = [senderId];
       if (receiverId === 'admin') rooms.push('admins');
-      else rooms.push(receiverId);
+      else {
+        rooms.push(receiverId);
+        rooms.push('admins'); // Broadcast to all admins so superadmin can monitor
+      }
       
       io.to(rooms).emit('receive_message', instantMsg);
 
