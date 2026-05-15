@@ -397,6 +397,11 @@ export default function AdminDashboard() {
               </div>
               <div className="flex items-center gap-2 mt-2">
                  <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold text-white ${(CRM_STATUSES[(u.crmStatus || 'nuevo').toLowerCase()] || CRM_STATUSES.nuevo).color}`}>{(CRM_STATUSES[(u.crmStatus || 'nuevo').toLowerCase()] || CRM_STATUSES.nuevo).label}</span>
+                 {adminProfile.role === 'superadmin' && u.quizData?.assignedTo && (
+                   <span className="ml-auto text-[7px] text-gold-500 font-mono tracking-widest uppercase border border-gold-500/30 bg-gold-500/5 px-1.5 py-0.5 rounded shadow-[0_0_5px_rgba(212,175,55,0.1)]">
+                     {maestrosList.find(m => m.id === u.quizData.assignedTo)?.name?.replace('MAESTR', 'M.') || u.quizData.assignedTo}
+                   </span>
+                 )}
               </div>
             </div>
           ))}
