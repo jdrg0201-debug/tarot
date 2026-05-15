@@ -18,7 +18,24 @@ export default function AdminDashboard() {
   const router = useRouter();
   const fileInputRef = useRef(null);
   const [users, setUsers] = useState([]);
-  const [activeChat, setActiveChat] = useState(null);
+  const [activeChat, setActiveChatState] = useState(null);
+
+  // Initialize activeChat from localStorage after mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedChat = localStorage.getItem('admin_active_chat');
+      if (savedChat) setActiveChatState(savedChat);
+    }
+  }, []);
+
+  const setActiveChat = (id) => {
+    setActiveChatState(id);
+    if (id) {
+      localStorage.setItem('admin_active_chat', id);
+    } else {
+      localStorage.removeItem('admin_active_chat');
+    }
+  };
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [tab, setTab] = useState('chats'); 
@@ -80,6 +97,13 @@ export default function AdminDashboard() {
     setSocket(s);
     s.emit('join', { userId: currentUser.id, role: 'admin' });
 
+    // Request native browser notifications for mobile
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+      }
+    }
+
     fetch(`${SOCKET_URL}/api/users?maestroId=${currentUser.id}`)
       .then(res => res.json())
       .then(data => setUsers(Array.isArray(data) ? data : []))
@@ -113,13 +137,20 @@ export default function AdminDashboard() {
       });
     });
 
+    const showNativeNotification = (title, body) => {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/favicon.ico' });
+      }
+    };
+
     s.on('new_lead', (user) => {
-      const audio = new Audio('/sounds/notification.mp3');
-      audio.play().catch(()=>{});
-      setNotifications(prev => [...prev, { id: Date.now(), text: `🌟 NUEVO LEAD: ${user.name}` }]);
-      
-      // Add user to the list if we are superadmin, or if it's assigned to us
+      // Add user to the list and play sound ONLY if we are superadmin, or if it's assigned to us
       if (currentUser.role === 'superadmin' || (user.quizData && user.quizData.assignedTo === currentUser.id)) {
+        const audio = new Audio('/sounds/notification.mp3');
+        audio.play().catch(()=>{});
+        showNativeNotification('🌟 Nuevo Lead', `Un alma nueva ha entrado: ${user.name}`);
+        setNotifications(prev => [...prev, { id: Date.now(), text: `🌟 NUEVO LEAD: ${user.name}` }]);
+        
         setUsers(prev => {
           if (prev.find(u => u.userId === user.userId)) return prev;
           return [user, ...prev].sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
@@ -136,6 +167,7 @@ export default function AdminDashboard() {
           if (msg.senderId !== 'admin') {
             const audio = new Audio('/sounds/notification.mp3');
             audio.play().catch(()=>{});
+            showNativeNotification('💬 Nuevo Mensaje', `Has recibido un mensaje de ${msg.senderId}`);
             setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${msg.senderId}` }]);
           }
           
