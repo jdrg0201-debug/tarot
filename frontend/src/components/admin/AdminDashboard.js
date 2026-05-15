@@ -121,10 +121,17 @@ export default function AdminDashboard() {
 
     s.on('receive_message', (msg) => {
       if (msg.senderId !== 'admin') {
-        const audio = new Audio('/sounds/notification.mp3');
-        audio.play().catch(()=>{});
-        setNotifications(prev => [...prev, { id: Date.now(), text: `💬 Mensaje de ${msg.senderId}` }]);
-        setUsers(prev => prev.map(u => u.userId === msg.senderId ? { ...u, updatedAt: Date.now() } : u).sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)));
+        setUsers(prev => {
+          // Check if this message belongs to a user assigned to this maestro (or if superadmin)
+          const userExists = prev.some(u => u.userId === msg.senderId);
+          if (currentUser.role === 'superadmin' || userExists) {
+            const audio = new Audio('/sounds/notification.mp3');
+            audio.play().catch(()=>{});
+            setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${msg.senderId}` }]);
+            return prev.map(u => u.userId === msg.senderId ? { ...u, updatedAt: Date.now() } : u).sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+          }
+          return prev;
+        });
       }
     });
 
