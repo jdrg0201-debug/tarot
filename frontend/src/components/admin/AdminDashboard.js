@@ -126,15 +126,20 @@ export default function AdminDashboard() {
 
 
     s.on('user_updated', (user) => {
-      setUsers(prev => {
-        const idx = prev.findIndex(u => u.userId === user.userId);
-        if (idx !== -1) {
-          const newUsers = [...prev];
-          newUsers[idx] = { ...newUsers[idx], ...user };
-          return newUsers.sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
-        }
-        return [user, ...prev].sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
-      });
+      if (currentUser.role === 'superadmin' || (user.quizData && user.quizData.assignedTo === currentUser.id)) {
+        setUsers(prev => {
+          const idx = prev.findIndex(u => u.userId === user.userId);
+          if (idx !== -1) {
+            const newUsers = [...prev];
+            newUsers[idx] = { ...newUsers[idx], ...user };
+            return newUsers.sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+          }
+          return [user, ...prev].sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+        });
+      } else {
+        // If it's no longer assigned to us (e.g. transferred), remove it from our view
+        setUsers(prev => prev.filter(u => u.userId !== user.userId));
+      }
     });
 
     const showNativeNotification = (title, body) => {
@@ -167,8 +172,9 @@ export default function AdminDashboard() {
           if (msg.senderId !== 'admin') {
             const audio = new Audio('/sounds/notification.mp3');
             audio.play().catch(()=>{});
-            showNativeNotification('💬 Nuevo Mensaje', `Has recibido un mensaje de ${msg.senderId}`);
-            setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${msg.senderId}` }]);
+            const senderName = prev.find(u => u.userId === msg.senderId)?.name || 'Cliente';
+            showNativeNotification('💬 Nuevo Mensaje', `Has recibido un mensaje de ${senderName}`);
+            setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${senderName}` }]);
           }
           
           if (!userExists) {
