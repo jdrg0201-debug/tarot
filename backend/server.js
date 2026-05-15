@@ -76,6 +76,12 @@ app.get('/api/users', async (req, res) => {
   res.json(mappedData);
 });
 
+app.get('/api/users/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { data } = await supabase.from('usuarios').select('*').eq('user_id', userId).single();
+  res.json(mapUser(data));
+});
+
 app.post('/api/register', async (req, res) => {
   const { userId, name, phone, reason } = req.body;
 
