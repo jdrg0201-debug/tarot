@@ -17,16 +17,29 @@ export default function ChatPage() {
     }
     setUserId(storedId);
 
-    // Load admin profile from backend
-    fetch(`${SOCKET_URL}/api/admin/settings`)
-      .then(res => res.json())
-      .then(data => {
-        setAdminSettings({
-          name: data.name || 'Maestro',
-          avatar: data.avatar || ''
-        });
-      })
-      .catch(() => {});
+    // Load assigned maestro from backend
+    const loadAssignedMaestro = async () => {
+      try {
+        const [userRes, maestrosRes] = await Promise.all([
+          fetch(`${SOCKET_URL}/api/users/${storedId}`),
+          fetch(`${SOCKET_URL}/api/maestros`)
+        ]);
+        const userData = await userRes.json();
+        const maestrosData = await maestrosRes.json();
+        
+        let maestroName = 'Maestro';
+        if (userData && userData.quizData && userData.quizData.assignedTo) {
+          const maestro = maestrosData.find(m => m.id === userData.quizData.assignedTo);
+          if (maestro) {
+            maestroName = maestro.name.replace('MAESTRA', 'M.').replace('MAESTRO', 'M.');
+          }
+        }
+        setAdminSettings({ name: maestroName, avatar: '' });
+      } catch (e) {
+        setAdminSettings({ name: 'Maestro', avatar: '' });
+      }
+    };
+    loadAssignedMaestro();
   }, []);
 
   if (!userId) return null;

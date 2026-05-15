@@ -142,9 +142,13 @@ export default function AdminDashboard() {
       }
     });
 
-    const showNativeNotification = (title, body) => {
+    const showNativeNotification = (title, body, targetUserId) => {
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: '/favicon.ico' });
+        const notif = new Notification(title, { body, icon: '/favicon.ico' });
+        notif.onclick = () => {
+          window.focus();
+          if (targetUserId) setActiveChat(targetUserId);
+        };
       }
     };
 
@@ -153,8 +157,8 @@ export default function AdminDashboard() {
       if (currentUser.role === 'superadmin' || (user.quizData && user.quizData.assignedTo === currentUser.id)) {
         const audio = new Audio('/sounds/notification.mp3');
         audio.play().catch(()=>{});
-        showNativeNotification('🌟 Nuevo Lead', `Un alma nueva ha entrado: ${user.name}`);
-        setNotifications(prev => [...prev, { id: Date.now(), text: `🌟 NUEVO LEAD: ${user.name}` }]);
+        showNativeNotification('🌟 Nuevo Lead', `Un alma nueva ha entrado: ${user.name}`, user.userId);
+        setNotifications(prev => [...prev, { id: Date.now(), text: `🌟 NUEVO LEAD: ${user.name}`, userId: user.userId }]);
         
         setUsers(prev => {
           if (prev.find(u => u.userId === user.userId)) return prev;
@@ -173,8 +177,8 @@ export default function AdminDashboard() {
             const audio = new Audio('/sounds/notification.mp3');
             audio.play().catch(()=>{});
             const senderName = prev.find(u => u.userId === msg.senderId)?.name || 'Cliente';
-            showNativeNotification('💬 Nuevo Mensaje', `Has recibido un mensaje de ${senderName}`);
-            setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${senderName}` }]);
+            showNativeNotification('💬 Nuevo Mensaje', `Has recibido un mensaje de ${senderName}`, msg.senderId);
+            setNotifications(n => [...n, { id: Date.now(), text: `💬 Mensaje de ${senderName}`, userId: msg.senderId }]);
           }
           
           if (!userExists) {
@@ -713,7 +717,20 @@ export default function AdminDashboard() {
         <div className="fixed bottom-4 right-4 z-[110] flex flex-col gap-2 pointer-events-none">
           <AnimatePresence>
             {notifications.map(n => (
-              <motion.div key={n.id} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} className="bg-red-900/95 backdrop-blur-md border border-gold-500/30 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs pointer-events-auto">
+              <motion.div 
+                key={n.id} 
+                initial={{ x: 100, opacity: 0 }} 
+                animate={{ x: 0, opacity: 1 }} 
+                exit={{ x: 100, opacity: 0 }} 
+                onClick={() => {
+                  if (n.userId) {
+                    setActiveChat(n.userId);
+                    setShowMobileSidebar(false);
+                  }
+                  setNotifications(prev => prev.filter(x => x.id !== n.id));
+                }}
+                className="bg-red-900/95 backdrop-blur-md border border-gold-500/30 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs pointer-events-auto cursor-pointer hover:bg-red-800 transition-colors"
+              >
                 <Bell size={14} className="text-gold-500" /> {n.text}
               </motion.div>
             ))}
