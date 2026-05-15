@@ -305,11 +305,11 @@ export default function AdminDashboard() {
   // --- STATISTICS CALCULATIONS ---
   const totalLeads = users.length;
   const statusCounts = {
-    nuevo: users.filter(u => u.crmStatus === 'nuevo' || !u.crmStatus).length,
-    conversacion: users.filter(u => u.crmStatus === 'conversacion').length,
-    caliente: users.filter(u => u.crmStatus === 'caliente').length,
-    cerrado: users.filter(u => u.crmStatus === 'cerrado').length,
-    perdido: users.filter(u => u.crmStatus === 'perdido').length,
+    nuevo: users.filter(u => !u.crmStatus || u.crmStatus.toLowerCase() === 'nuevo').length,
+    conversacion: users.filter(u => u.crmStatus?.toLowerCase() === 'conversacion').length,
+    caliente: users.filter(u => u.crmStatus?.toLowerCase() === 'caliente').length,
+    cerrado: users.filter(u => u.crmStatus?.toLowerCase() === 'cerrado').length,
+    perdido: users.filter(u => u.crmStatus?.toLowerCase() === 'perdido').length,
   };
   const interactedCount = statusCounts.conversacion + statusCounts.caliente + statusCounts.cerrado;
   const unrespondedCount = statusCounts.nuevo;
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
     .filter(u => {
       if (showArchived) return u.isArchived;
       if (tab === 'leads' && !u.phone) return false;
-      if (filterStatus !== 'all' && u.crmStatus !== filterStatus) return false;
+      if (filterStatus !== 'all' && (u.crmStatus?.toLowerCase() || 'nuevo') !== filterStatus) return false;
       return !u.isArchived;
     })
     .filter(u => {
@@ -396,7 +396,7 @@ export default function AdminDashboard() {
                  <span className="text-[10px] text-gray-500">{formatDistanceToNow(new Date(u.updatedAt || u.createdAt || Date.now()), { locale: es, addSuffix: false })}</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                 <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold text-white ${CRM_STATUSES[u.crmStatus || 'nuevo'].color}`}>{CRM_STATUSES[u.crmStatus || 'nuevo'].label}</span>
+                 <span className={`px-1.5 py-0.5 rounded text-[8px] uppercase font-bold text-white ${(CRM_STATUSES[(u.crmStatus || 'nuevo').toLowerCase()] || CRM_STATUSES.nuevo).color}`}>{(CRM_STATUSES[(u.crmStatus || 'nuevo').toLowerCase()] || CRM_STATUSES.nuevo).label}</span>
               </div>
             </div>
           ))}
