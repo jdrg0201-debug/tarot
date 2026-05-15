@@ -354,8 +354,22 @@ io.on('connection', (socket) => {
         } else {
           let assignedTo = null;
           if (globalSettings.autoDistribute && MAESTROS.length > 0) {
-            assignedTo = MAESTROS[globalSettings.lastAssignedIndex]?.id;
-            globalSettings.lastAssignedIndex = (globalSettings.lastAssignedIndex + 1) % MAESTROS.length;
+            // Find the last assigned maestro from the database to ensure round-robin survives server restarts
+            const { data: lastUsers } = await supabase
+              .from('usuarios')
+              .select('quiz_data')
+              .order('creado_en', { ascending: false })
+              .limit(1);
+            
+            let nextIndex = 0;
+            if (lastUsers && lastUsers.length > 0 && lastUsers[0].quiz_data?.assignedTo) {
+              const lastAssigned = lastUsers[0].quiz_data.assignedTo;
+              const lastIdx = MAESTROS.findIndex(m => m.id === lastAssigned);
+              if (lastIdx !== -1) {
+                nextIndex = (lastIdx + 1) % MAESTROS.length;
+              }
+            }
+            assignedTo = MAESTROS[nextIndex]?.id;
           }
           const quizData = assignedTo ? { assignedTo } : {};
           
