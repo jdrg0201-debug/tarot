@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', 'TU_PIXEL_ID_AQUI'); // REEMPLAZA "TU_PIXEL_ID_AQUI" CON TU ID
+              fbq('init', '1469917424830725');
               fbq('track', 'PageView');
             `,
           }}
@@ -45,7 +45,7 @@ export default function RootLayout({ children }) {
             height="1"
             width="1"
             style={{ display: 'none' }}
-            src="https://www.facebook.com/tr?id=TU_PIXEL_ID_AQUI&ev=PageView&noscript=1"
+            src="https://www.facebook.com/tr?id=1469917424830725&ev=PageView&noscript=1"
           />
         </noscript>
         {/* End Meta Pixel Code */}
