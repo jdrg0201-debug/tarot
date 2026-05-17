@@ -344,7 +344,7 @@ export default function AdminDashboard() {
 
     const cleanPhone = phone.replace(/\D/g, '');
     const msg = `Hola ${name}, soy el Maestro. He analizado tu caso y es importante que hablemos...`;
-    window.open(`https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   // --- STATISTICS CALCULATIONS ---
